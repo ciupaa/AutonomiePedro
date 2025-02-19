@@ -1,9 +1,6 @@
 package org.firstinspires.ftc.teamcode.SubSystems;
 
 import static com.pedropathing.localization.GoBildaPinpointDriver.EncoderDirection.REVERSED;
-import static org.firstinspires.ftc.teamcode.teleop.TeleOpMeetXEO.ld;
-import static org.firstinspires.ftc.teamcode.teleop.TeleOpMeetXEO.li;
-import static org.firstinspires.ftc.teamcode.teleop.TeleOpMeetXEO.lp;
 
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.pedropathing.follower.FollowerConstants;
