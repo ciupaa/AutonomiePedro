@@ -8,19 +8,19 @@ import com.pedropathing.pathgen.BezierLine;
 import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Constants;
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.rowanmcalpin.nextftc.core.command.groups.ParallelGroup;
 import com.rowanmcalpin.nextftc.core.command.groups.SequentialGroup;
-import com.rowanmcalpin.nextftc.core.command.utility.delays.Delay;
 import com.rowanmcalpin.nextftc.pedro.FollowPath;
 import com.rowanmcalpin.nextftc.pedro.PedroOpMode;
-import org.firstinspires.ftc.teamcode.SubSystems.ServoRotire;
-import org.firstinspires.ftc.teamcode.SubSystems.Claw;
+
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.SubSystems.Arm;
+import org.firstinspires.ftc.teamcode.SubSystems.Claw;
 import org.firstinspires.ftc.teamcode.SubSystems.Lift;
+import org.firstinspires.ftc.teamcode.SubSystems.ServoRotire;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 
@@ -29,8 +29,9 @@ import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 @Autonomous(name = "AutoSample")
 
 
-public class AutoSample extends PedroOpMode {
-    public AutoSample() {
+public class AutoSampleCameraTest extends PedroOpMode {
+    private Limelight3A limelight;
+    public AutoSampleCameraTest() {
         super(Claw.INSTANCE, Lift.INSTANCE, ServoRotire.INSTANCE, Arm.INSTANCE);
     }
 
@@ -195,14 +196,7 @@ public class AutoSample extends PedroOpMode {
                 ),
 
                 ServoRotire.INSTANCE.outtake(),
-                Claw.INSTANCE.open(),
-
-                new ParallelGroup(
-                        new FollowPath(Park),
-                        Arm.INSTANCE.toLow(),
-                        Lift.INSTANCE.toLow(),
-                        ServoRotire.INSTANCE.intake()
-                )
+                Claw.INSTANCE.open()
         );
     }
 
@@ -212,10 +206,66 @@ public class AutoSample extends PedroOpMode {
         follower = new Follower(hardwareMap);
         follower.setStartingPose(new Pose(7, 85, 0));
         buildPaths();
+
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        telemetry.setMsTransmissionInterval(11);
+        limelight.pipelineSwitch(0);
     }
 
     @Override
     public void onStartButtonPressed() {
         secondRoutine().invoke();
+        detectAndApproachSample();
+    }
+
+    public void detectAndApproachSample() {
+        LLResult result = limelight.getLatestResult(); // Get the latest result from Limelight
+
+        if (result != null && result.isValid()) { // Check if result is valid
+            // Accessing the target details from the result
+            double targetX = result.getTx(); // Get target X position (horizontal offset)
+            double targetY = result.getTy(); // Get target Y position (vertical offset)
+
+            telemetry.addData("Limelight Target", "X: %.2f, Y: %.2f", targetX, targetY);
+
+            // If the number of targets is above a threshold, proceed to move towards it
+            moveToSample(targetX, targetY);
+        } else {
+            telemetry.addData("Limelight", "No valid data from Limelight.");
+        }
+
+        telemetry.update();  // Display telemetry data
+    }
+
+
+    public void moveToSample(double targetX, double targetY) {
+        // Assuming that targetX and targetY are the offset values of the target
+        double moveDistance = 10; // Example: Move 10 inches away from the target
+
+        // Convert offset (in degrees) to movement distance
+        double forwardSpeed = (targetY > 0) ? 0.5 : -0.5;  // Forward or backward depending on Y
+        double turnSpeed = targetX > 0 ? 0.3 : -0.3; // Turn towards the target X
+
+        // Use your robot's movement logic to move it closer
+        driveRobot(forwardSpeed, turnSpeed);
+    }
+
+    // Simple movement function
+    public void driveRobot(double forwardSpeed, double turnSpeed) {
+        // Adjust motor powers for robot drive system
+        // For example:
+        // leftDrive.setPower(forwardSpeed + turnSpeed);
+        // rightDrive.setPower(forwardSpeed - turnSpeed);
+    }
+
+    // Function to keep tracking the target if not within range
+    public void keepTrackingTarget(double targetX, double targetY) {
+        double turnSpeed = targetX > 0 ? 0.3 : -0.3;
+        driveRobot(0, turnSpeed); // Adjust robot to face the target
+    }
+
+    @Override
+    public void onStop() {
+        limelight.stop();
     }
 }

@@ -9,18 +9,15 @@ import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Constants;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.rowanmcalpin.nextftc.core.command.groups.ParallelGroup;
 import com.rowanmcalpin.nextftc.core.command.groups.SequentialGroup;
-import com.rowanmcalpin.nextftc.core.command.utility.delays.Delay;
 import com.rowanmcalpin.nextftc.pedro.FollowPath;
 import com.rowanmcalpin.nextftc.pedro.PedroOpMode;
-import org.firstinspires.ftc.teamcode.SubSystems.ServoRotire;
-import org.firstinspires.ftc.teamcode.SubSystems.Claw;
+
 import org.firstinspires.ftc.teamcode.SubSystems.Arm;
+import org.firstinspires.ftc.teamcode.SubSystems.Claw;
 import org.firstinspires.ftc.teamcode.SubSystems.Lift;
+import org.firstinspires.ftc.teamcode.SubSystems.ServoRotire;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 
@@ -29,8 +26,8 @@ import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 @Autonomous(name = "AutoSample")
 
 
-public class AutoSample extends PedroOpMode {
-    public AutoSample() {
+public class AutoSampleTest extends PedroOpMode {
+    public AutoSampleTest() {
         super(Claw.INSTANCE, Lift.INSTANCE, ServoRotire.INSTANCE, Arm.INSTANCE);
     }
 
@@ -51,47 +48,45 @@ public class AutoSample extends PedroOpMode {
         grabPickup1 = follower.pathBuilder()
                 .addPath(
                         // Line 2
-                        new BezierCurve(
+                        new BezierLine(
                                 new Point(15.252, 128.523, Point.CARTESIAN),
-                                new Point(22.430, 107.439, Point.CARTESIAN),
-                                new Point(45.750, 109.250, Point.CARTESIAN)
+                                new Point(34.000, 121.000, Point.CARTESIAN)
                         )
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(90))
+                .setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(0))
                 .build();
 
         scorePickup1 = follower.pathBuilder()
                 .addPath(
                         // Line 3
                         new BezierLine(
-                                new Point(45.750, 109.250, Point.CARTESIAN),
+                                new Point(34.000, 121.000, Point.CARTESIAN),
                                 new Point(15.252, 128.523, Point.CARTESIAN)
                         )
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(135))
+                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(135))
                 .build();
 
         grabPickup2 = follower.pathBuilder()
                 .addPath(
                         // Line 4
-                        new BezierCurve(
+                        new BezierLine(
                                 new Point(15.252, 128.523, Point.CARTESIAN),
-                                new Point(22.430, 115.514, Point.CARTESIAN),
-                                new Point(45.750, 120.250, Point.CARTESIAN)
+                                new Point(34.000, 131.000, Point.CARTESIAN)
                         )
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(90))
+                .setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(0))
                 .build();
 
         scorePickup2 = follower.pathBuilder()
                 .addPath(
                         // Line 5
                         new BezierLine(
-                                new Point(45.750, 120.250, Point.CARTESIAN),
+                                new Point(34.000, 131.000, Point.CARTESIAN),
                                 new Point(15.252, 128.523, Point.CARTESIAN)
                         )
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(135))
+                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(135))
                 .build();
 
         grabPickup3 = follower.pathBuilder()

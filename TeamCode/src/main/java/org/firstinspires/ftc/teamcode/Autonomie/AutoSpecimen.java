@@ -40,7 +40,7 @@ public class AutoSpecimen extends PedroOpMode {
     private final Pose pickup3Pose = new Pose(0, 0, Math.toRadians(0));
     private final Pose parkPose = new Pose(0, 0, Math.toRadians(0));
 
-    private PathChain gotoPickup1, gotoPickup2, gotoPickup3,
+    private PathChain gotoPickup1, gotoPickup2, gotoPickup3, gotoIntermediar,
             pushPickup1, pushPickup2, pushPickup3,
             grabPickup1, grabPickup2, grabPickup3, grabHumanPlayer,
             scorePickup1, scorePickup2, scorePickup3, scoreHumanPlayer,
@@ -51,189 +51,190 @@ public class AutoSpecimen extends PedroOpMode {
                 .addPath(
                         // Line 1
                         new BezierLine(
-                                new Point(134.000, 85.000, Point.CARTESIAN),
-                                new Point(106.000, 78.056, Point.CARTESIAN)
+                                new Point(9.000, 60.000, Point.CARTESIAN),
+                                new Point(37.000, 65.000, Point.CARTESIAN)
                         )
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
+                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
+                .build();
+
+        gotoIntermediar = follower.pathBuilder()
+                .addPath(
+                        // Line 2
+                        new BezierLine(
+                                new Point(37.000, 65.000, Point.CARTESIAN),
+                                new Point(32.299, 39.701, Point.CARTESIAN)
+                        )
+                )
+                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
                 .build();
 
         gotoPickup1 = follower.pathBuilder()
                 .addPath(
-                        // Line 2
+                        // Line 3
                         new BezierCurve(
-                                new Point(106.000, 78.056, Point.CARTESIAN),
-                                new Point(114.617, 124.037, Point.CARTESIAN),
-                                new Point(78.953, 97.794, Point.CARTESIAN),
-                                new Point(85.000, 121.000, Point.CARTESIAN)
+                                new Point(32.299, 39.701, Point.CARTESIAN),
+                                new Point(66.393, 38.579, Point.CARTESIAN),
+                                new Point(60.000, 23.000, Point.CARTESIAN)
                         )
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
+                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
                 .build();
 
         pushPickup1 = follower.pathBuilder()
                 .addPath(
-                        // Line 3
+                        // Line 4
                         new BezierLine(
-                                new Point(85.000, 121.000, Point.CARTESIAN),
-                                new Point(120.000, 121.000, Point.CARTESIAN)
+                                new Point(60.000, 23.000, Point.CARTESIAN),
+                                new Point(25.000, 23.000, Point.CARTESIAN)
                         )
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
+                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
                 .build();
 
         gotoPickup2 = follower.pathBuilder()
                 .addPath(
-                        // Line 4
+                        // Line 5
                         new BezierCurve(
-                                new Point(120.000, 121.000, Point.CARTESIAN),
-                                new Point(80.523, 120.449, Point.CARTESIAN),
-                                new Point(85.000, 131.000, Point.CARTESIAN)
+                                new Point(25.000, 23.000, Point.CARTESIAN),
+                                new Point(64.374, 26.916, Point.CARTESIAN),
+                                new Point(60.000, 13.000, Point.CARTESIAN)
                         )
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
+                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
                 .build();
 
         pushPickup2 = follower.pathBuilder()
                 .addPath(
-                        // Line 5
+                        // Line 6
                         new BezierLine(
-                                new Point(85.000, 131.000, Point.CARTESIAN),
-                                new Point(120.000, 131.000, Point.CARTESIAN)
+                                new Point(60.000, 13.000, Point.CARTESIAN),
+                                new Point(25.000, 13.000, Point.CARTESIAN)
                         )
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
+                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
                 .build();
 
         gotoPickup3 = follower.pathBuilder()
                 .addPath(
-                        // Line 6
+                        // Line 7
                         new BezierCurve(
-                                new Point(120.000, 131.000, Point.CARTESIAN),
-                                new Point(80.299, 130.318, Point.CARTESIAN),
-                                new Point(85.000, 137.400, Point.CARTESIAN)
+                                new Point(25.000, 13.000, Point.CARTESIAN),
+                                new Point(60.336, 14.579, Point.CARTESIAN),
+                                new Point(60.000, 7.000, Point.CARTESIAN)
                         )
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
+                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
                 .build();
 
         pushPickup3 = follower.pathBuilder()
                 .addPath(
-                        // Line 7
+                        // Line 8
                         new BezierLine(
-                                new Point(85.000, 137.400, Point.CARTESIAN),
-                                new Point(120.000, 137.400, Point.CARTESIAN)
+                                new Point(60.000, 7.000, Point.CARTESIAN),
+                                new Point(25.000, 7.000, Point.CARTESIAN)
                         )
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
+                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
                 .build();
 
         grabPickup1 = follower.pathBuilder()
                 .addPath(
-                        // Line 8
-                        new BezierCurve(
-                                new Point(120.000, 137.400, Point.CARTESIAN),
-                                new Point(93.981, 129.645, Point.CARTESIAN),
-                                new Point(134.000, 121.000, Point.CARTESIAN)
+                        // Line 9
+                        new BezierLine(
+                                new Point(25.000, 7.000, Point.CARTESIAN),
+                                new Point(13.000, 24.000, Point.CARTESIAN)
                         )
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(180))
                 .build();
 
         scorePickup1 = follower.pathBuilder()
                 .addPath(
-                        // Line 9
-                        new BezierCurve(
-                                new Point(134.000, 121.000, Point.CARTESIAN),
-                                new Point(137.271, 76.935, Point.CARTESIAN),
-                                new Point(106.000, 75.000, Point.CARTESIAN)
+                        // Line 10
+                        new BezierLine(
+                                new Point(13.000, 24.000, Point.CARTESIAN),
+                                new Point(37.000, 67.000, Point.CARTESIAN)
                         )
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(180))
+                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(0))
                 .build();
 
         grabPickup2 = follower.pathBuilder()
                 .addPath(
-                        // Line 10
-                        new BezierCurve(
-                                new Point(106.000, 75.000, Point.CARTESIAN),
-                                new Point(115.514, 122.019, Point.CARTESIAN),
-                                new Point(134.000, 121.000, Point.CARTESIAN)
+                        // Line 11
+                        new BezierLine(
+                                new Point(37.000, 67.000, Point.CARTESIAN),
+                                new Point(13.000, 24.000, Point.CARTESIAN)
                         )
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(180))
                 .build();
 
         scorePickup2 = follower.pathBuilder()
                 .addPath(
-                        // Line 11
-                        new BezierCurve(
-                                new Point(134.000, 121.000, Point.CARTESIAN),
-                                new Point(136.374, 74.467, Point.CARTESIAN),
-                                new Point(106.000, 72.000, Point.CARTESIAN)
+                        // Line 12
+                        new BezierLine(
+                                new Point(13.000, 24.000, Point.CARTESIAN),
+                                new Point(37.000, 69.000, Point.CARTESIAN)
                         )
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(180))
+                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(0))
                 .build();
 
         grabPickup3 = follower.pathBuilder()
                 .addPath(
-                        // Line 12
-                        new BezierCurve(
-                                new Point(106.000, 72.000, Point.CARTESIAN),
-                                new Point(114.168, 121.346, Point.CARTESIAN),
-                                new Point(134.000, 121.000, Point.CARTESIAN)
+                        // Line 13
+                        new BezierLine(
+                                new Point(37.000, 69.000, Point.CARTESIAN),
+                                new Point(13.000, 24.000, Point.CARTESIAN)
                         )
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(180))
                 .build();
 
         scorePickup3 = follower.pathBuilder()
                 .addPath(
-                        // Line 13
-                        new BezierCurve(
-                                new Point(134.000, 121.000, Point.CARTESIAN),
-                                new Point(135.028, 71.776, Point.CARTESIAN),
-                                new Point(106.000, 69.000, Point.CARTESIAN)
-                        )
-                )
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(180))
-                .build();
-
-        grabHumanPlayer = follower.pathBuilder()
-                .addPath(
                         // Line 14
-                        new BezierCurve(
-                                new Point(106.000, 69.000, Point.CARTESIAN),
-                                new Point(113.944,123.140, Point.CARTESIAN),
-                                new Point(134.000,121.000, Point.CARTESIAN)
+                        new BezierLine(
+                                new Point(13.000, 24.000, Point.CARTESIAN),
+                                new Point(37.000, 71.000, Point.CARTESIAN)
                         )
                 )
                 .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(0))
                 .build();
 
-        scoreHumanPlayer = follower.pathBuilder()
+        grabHumanPlayer = follower.pathBuilder()
                 .addPath(
                         // Line 15
-                        new BezierCurve(
-                                new Point(134.000, 121.000, Point.CARTESIAN),
-                                new Point(133.682,69.084, Point.CARTESIAN),
-                                new Point(106.000,66.000, Point.CARTESIAN)
+                        new BezierLine(
+                                new Point(37.000, 71.000, Point.CARTESIAN),
+                                new Point(13.000, 24.000, Point.CARTESIAN)
                         )
                 )
                 .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(180))
                 .build();
 
-        Park = follower.pathBuilder()
+        scoreHumanPlayer = follower.pathBuilder()
                 .addPath(
-                        // Line 14
-                        new BezierCurve(
-                                new Point(106.000, 66.000, Point.CARTESIAN),
-                                new Point(133.458, 79.626, Point.CARTESIAN),
-                                new Point(133.458, 109.682, Point.CARTESIAN)
+                        // Line 16
+                        new BezierLine(
+                                new Point(13.000, 24.000, Point.CARTESIAN),
+                                new Point(37.000, 73.000, Point.CARTESIAN)
                         )
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(270))
+                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(0))
+                .build();
+
+        Park = follower.pathBuilder()
+                .addPath(
+                        // Line 17
+                        new BezierLine(
+                                new Point(37.000, 73.000, Point.CARTESIAN),
+                                new Point(13.000, 32.000, Point.CARTESIAN)
+                        )
+                )
+                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(90))
                 .build();
     }
 
@@ -262,7 +263,7 @@ public class AutoSpecimen extends PedroOpMode {
     public void onInit() {
         Constants.setConstants(FConstants.class, LConstants.class);
         follower = new Follower(hardwareMap);
-        follower.setStartingPose(new Pose(134, 85, 0));
+        follower.setStartingPose(new Pose(9, 60, 0));
         buildPaths();
     }
 
