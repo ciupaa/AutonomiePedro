@@ -21,29 +21,27 @@ import java.util.List;
 @Config
 @TeleOp(name = "PID2 TeleOp")
 public class PID2 extends OpMode {
+
     // PID Controllers
     private PIDController armPid;
     private PIDController liftPid;
-    private PIDController hang1Pid;
-    private PIDController hang2Pid;
+    private PIDController hangPid;
 
     // PID Constants (Configurable via Dashboard)
     public static double ARM_P = 0.0055, ARM_I = 0, ARM_D = 0.0002, ARM_F = 0.0011;
     public static double LIFT_P = 0.01, LIFT_I = 0, LIFT_D = 0.0002, LIFT_F = 0.14;
-    public static double HANG1_P = 0, HANG1_I = 0, HANG1_D = 0, HANG1_F = 0;
-    public static double HANG2_P = 0, HANG2_I = 0, HANG2_D = 0, HANG2_F = 0;
+    public static double HANG_P = 0, HANG_I = 0, HANG_D = 0, HANG_F = 0;
 
-    // Target_positions
-    private double armTarget = 0;
-    private double liftTarget = 0;
-    private double hang1Target = 0;
-    private int hang2Target = 0;
+    // Target Positions
+    private double armTarget = 100;
+    private double liftTarget = 20;
+    private double hangTarget = 0;
 
     // Conversion Constants
     private static final double ARM_TICKS_PER_DEGREE = 2.77;
-    private static final double HANG_TICKS_PER_DEGREE = 3.434;
     private static final double LIFT_TICKS_PER_MM = 3.20;
-    private static final double FUDGE_FACTOR = 250; // Max adjustment in ticks
+    private static final double HANG_TICKS_PER_MM = 3.434;
+    private static final double FUDGE_FACTOR = 250;
 
     // Hardware Declarations
     private DcMotorEx armMotor;
@@ -53,11 +51,11 @@ public class PID2 extends OpMode {
     private Servo clawServo, rotationServo;
     private CRServo hangServo1, hangServo2;
 
-    // Gamepad
+    // Gamepads
     private GamepadEx driverGamepad;
     private GamepadEx toolGamepad;
 
-    // Position Constants
+    // Position Presets
     private static final double ARM_CLOSED = 10;
     private static final double ARM_MAX = 1000;
     private static final double ARM_COS_SUS = 5950;
@@ -65,7 +63,8 @@ public class PID2 extends OpMode {
     private static final double ARM_INTAKE = 1400;
     private static final double ARM_HANG_POS1 = 7140;
     private static final double ARM_HANG_POS2 = 8701;
-    private static final double ARM_HANG3_CLOSED = 10;
+    private static final double HANG_DOWN = 10;
+    private static final double HANG_UP = 100;
 
     private static final double LIFT_CLOSED = 10;
     private static final double LIFT_MAX = 1000;
@@ -81,15 +80,13 @@ public class PID2 extends OpMode {
     private double armFudgeFactor = 0;
     private double loopTime = 0;
     private double lastLoopTime = 0;
-    private boolean pidEnabled = true;
 
     @Override
     public void init() {
         // Initialize PID Controllers
         armPid = new PIDController(ARM_P, ARM_I, ARM_D);
         liftPid = new PIDController(LIFT_P, LIFT_I, LIFT_D);
-        hang1Pid = new PIDController(HANG1_P, HANG1_I, HANG1_D);
-        hang2Pid = new PIDController(HANG2_P, HANG2_I, HANG2_D);
+        hangPid = new PIDController(HANG_P, HANG_I, HANG_D);
 
         // Set up telemetry
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -103,7 +100,7 @@ public class PID2 extends OpMode {
         driverGamepad = new GamepadEx(gamepad1);
         toolGamepad = new GamepadEx(gamepad2);
 
-        // Optimize hardware reading
+        // Configure bulk caching
         configureBulkCaching();
     }
 
@@ -121,13 +118,12 @@ public class PID2 extends OpMode {
     private void initializeMotors() {
         armMotor = hardwareMap.get(DcMotorEx.class, "motor_stanga");
         liftMotor = hardwareMap.get(DcMotorEx.class, "motor_glisiere");
-        hangMotor1 = hardwareMap.get(DcMotorEx.class, "hang1");
-        hangMotor2 = hardwareMap.get(DcMotorEx.class, "hang2");
-
         frontLeft = hardwareMap.get(DcMotorEx.class, "fata_stanga");
         frontRight = hardwareMap.get(DcMotorEx.class, "fata_dreapta");
         backLeft = hardwareMap.get(DcMotorEx.class, "spate_stanga");
         backRight = hardwareMap.get(DcMotorEx.class, "spate_dreapta");
+        hangMotor1 = hardwareMap.get(DcMotorEx.class, "hang1");
+        hangMotor2 = hardwareMap.get(DcMotorEx.class, "hang2");
     }
 
     private void initializeServos() {
@@ -138,18 +134,16 @@ public class PID2 extends OpMode {
     }
 
     private void configureMotors() {
-        // Motor directions
         armMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         liftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         hangMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        // Brake behavior
-        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     private void configureBulkCaching() {
@@ -162,27 +156,22 @@ public class PID2 extends OpMode {
     private void updatePidParameters() {
         armPid.setPID(ARM_P, ARM_I, ARM_D);
         liftPid.setPID(LIFT_P, LIFT_I, LIFT_D);
-        hang1Pid.setPID(HANG1_P, HANG1_I, HANG1_D);
-        hang2Pid.setPID(HANG2_P, HANG2_I, HANG2_D);
+        hangPid.setPID(HANG_P, HANG_I, HANG_D);
     }
 
     private void updatePositions() {
         int armPos = armMotor.getCurrentPosition();
         int liftPos = liftMotor.getCurrentPosition();
-        int hang1Pos = hangMotor1.getCurrentPosition();
-        int hang2Pos = hangMotor2.getCurrentPosition();
+        int hangPos = hangMotor1.getCurrentPosition();
 
-        // Calculate PID outputs
         double armPidOutput = armPid.calculate(armPos, armTarget + armFudgeFactor);
         double liftPidOutput = liftPid.calculate(liftPos, liftTarget);
-        double hangPidOutput = hang1Pid.calculate(hang1Pos, hang1Target);
+        double hangPidOutput = hangPid.calculate(hangPos, hangTarget);
 
-        // Calculate feedforward
         double armFF = Math.cos(Math.toRadians((armTarget + armFudgeFactor) / ARM_TICKS_PER_DEGREE)) * ARM_F;
         double liftFF = LIFT_F;
-        double hangFF = HANG1_F;
+        double hangFF = HANG_F;
 
-        // Apply power
         armMotor.setPower(armPidOutput + armFF);
         liftMotor.setPower(liftPidOutput + liftFF);
         hangMotor1.setPower(hangPidOutput + hangFF);
@@ -190,9 +179,9 @@ public class PID2 extends OpMode {
     }
 
     private void updateDriveTrain() {
-        double y = -gamepad1.left_stick_y;  // Forward/backward
-        double x = gamepad1.left_stick_x;   // Strafe
-        double rx = gamepad1.right_stick_x; // Rotation
+        double y = -gamepad1.left_stick_y;
+        double x = gamepad1.left_stick_x;
+        double rx = gamepad1.right_stick_x;
 
         double denominator = Math.max(abs(y) + abs(x) + abs(rx), 1);
         frontLeft.setPower((y + x + rx) / denominator);
@@ -236,15 +225,21 @@ public class PID2 extends OpMode {
             if (armMotor.getCurrentPosition() > 8600) armTarget = ARM_HANG_POS2;
         }
         if (gamepad1.dpad_left && armMotor.getCurrentPosition() > 8600) {
-            armTarget = ARM_HANG3_CLOSED;
+            armTarget = ARM_CLOSED;
+        }
+        if (gamepad1.dpad_up) {
+            hangTarget = HANG_UP;
+        }
+        if (gamepad1.dpad_down) {
+            hangTarget = HANG_DOWN;
         }
 
-        // Claw control (toggle)
+        // Claw control
         if (gamepad2.a) {
             clawServo.setPosition(clawServo.getPosition() == CLAW_CLOSED ? CLAW_OPEN : CLAW_CLOSED);
         }
 
-        // Rotation servo (toggle)
+        // Rotation servo
         if (gamepad2.b) {
             rotationServo.setPosition(rotationServo.getPosition() == ROTATION_EXTENDED ?
                     ROTATION_RETRACTED : ROTATION_EXTENDED);
@@ -268,12 +263,13 @@ public class PID2 extends OpMode {
     }
 
     private void updateTelemetry() {
-        telemetry.addData("PID Enabled", pidEnabled);
-        telemetry.addData("Arm Position", armMotor.getCurrentPosition());
-        telemetry.addData("Lift Position", liftMotor.getCurrentPosition());
-        telemetry.addData("Hang1 Position", hangMotor1.getCurrentPosition());
-        telemetry.addData("Hang2 Position", hangMotor2.getCurrentPosition());
-        telemetry.addData("Fudge Factor", armFudgeFactor);
+        telemetry.addLine("PETUNIX");
+        telemetry.addData("pos arm", armMotor.getCurrentPosition());
+        telemetry.addData("lift pos", liftMotor.getCurrentPosition());
+        telemetry.addData("hang3 pos", hangMotor1.getCurrentPosition());
+        telemetry.addLine("ROBOPEDA");
+        telemetry.addLine("CIUPA, LUCAS & GEORGE");
+        telemetry.addLine("PETUNIX");
         telemetry.update();
     }
 
