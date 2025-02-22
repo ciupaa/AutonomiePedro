@@ -68,8 +68,8 @@ public class PID extends OpMode {
     // Conversion Constants
     private final double ticks_in_degree = 2.77;
     private final double ticks_in_mm = 3.20;
-    private final double h1ticks_in_degree = 3.434;
-    private final double h2ticks_in_degree = 3.434;
+    private final double h1ticks_in_mm = 3.434;
+    private final double h2ticks_in_mm = 3.434;
 
     // Position Presets
     double armClosed = 10;
@@ -79,8 +79,8 @@ public class PID extends OpMode {
     double armIntake = 1400;
     double armHangPos1 = 7140;
     double armHangPos2 = 8701;
-    double armHang3Closed = 10;
-    double armHang3Open = 100;
+    double armHang3Down = 10;
+    double armHang3Up = 100;
 
     double liftClosed = 10;
     double liftMax = 1000;
@@ -100,8 +100,7 @@ public class PID extends OpMode {
     double cycletime = 0;
     double looptime = 0;
     double oldtime = 0;
-    private boolean pidEnabled = true;
-    private boolean previousLeftStick = false;
+
 
     @Override
     public void init() {
@@ -200,6 +199,7 @@ public class PID extends OpMode {
         fata_dreapta.setPower(frontRightPower);
         spate_dreapta.setPower(backRightPower);
         motor_glisiere.setPower(lpower);
+        motor_stanga.setPower(power);
 
         // Hang servos control
         hang31.setPower(gamepad1.right_trigger + (-gamepad1.left_trigger));
@@ -242,7 +242,13 @@ public class PID extends OpMode {
             target = armHangPos2;
         }
         if (gamepad1.dpad_left && armPos > 8600) {
-            target = armHang3Closed;
+            target = armClosed;
+        }
+        if(gamepad1.dpad_up){
+            h1target = armHang3Up;
+        }
+        if(gamepad1.dpad_down){
+            h1target = armHang3Down;
         }
 
         // Enforce limits
@@ -277,7 +283,6 @@ public class PID extends OpMode {
         oldtime = looptime;
 
         // Telemetry
-        telemetry.addData("PID Enabled", pidEnabled);
         telemetry.addData("pos arm", armPos);
         telemetry.addData("lift pos", liftPos);
         telemetry.addData("h1 pos", hang1Pos);
