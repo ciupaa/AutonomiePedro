@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.cos;
+import static java.lang.Math.toRadians;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -19,354 +21,308 @@ import com.qualcomm.robotcore.hardware.Servo;
 import java.util.List;
 
 @Config
-@TeleOp
+@TeleOp(name = "TESTPidSpecimenSiSample")
 public class TESTPidSpecimenSiSample extends OpMode {
 
-    // [Existing Hardware Declarations Unchanged]
-    private DcMotorEx motor_stanga;
-    private DcMotorEx motor_glisiere;
-    private DcMotorEx fata_stanga;
-    private DcMotorEx fata_dreapta;
-    private DcMotorEx spate_stanga;
-    private DcMotorEx spate_dreapta;
-    private DcMotorEx hang1 = null;
-    private DcMotorEx hang2 = null;
-    private Servo servoRotire;
-    private Servo cleste;
-    private CRServo hang31;
-    private CRServo hang32;
+    // --- Hardware Components ---
+    private DcMotorEx motorStanga;      // Arm motor
+    private DcMotorEx motorGlisiere;    // Lift motor
+    private DcMotorEx fataStanga;       // Front left drive motor
+    private DcMotorEx fataDreapta;      // Front right drive motor
+    private DcMotorEx spateStanga;      // Back left drive motor
+    private DcMotorEx spateDreapta;     // Back right drive motor
+    private DcMotorEx hang1;            // Hang motor 1
+    private DcMotorEx hang2;            // Hang motor 2
+    private Servo servoRotire;          // Rotation servo
+    private Servo cleste;               // Claw servo
+    private CRServo hang31;             // Hang servo 1
+    private CRServo hang32;             // Hang servo 2
 
-    // [Existing PID Controllers Unchanged]
-    private PIDController controller;
-    private PIDController lcontroller;
-    private PIDController hang1pid;
-    private PIDController hang2pid;
+    // --- PID Controllers ---
+    private PIDController armController;
+    private PIDController liftController;
+    private PIDController hang1Controller;
+    private PIDController hang2Controller;
 
-    // [Existing PID Tuning Parameters Unchanged]
-    public static double p = 0.0055, i = 0, d = 0.0002;
-    public static double f = 0.0011;
-    public static double lp = 0.01, li = 0, ld = 0.0002;
-    public static double lf = 0.14;
-    public static double h1p = 0, h1i = 0, h1d = 0;
-    public static double h1f = 0;
-    public static double h2p = 0, h2i = 0, h2d = 0;
-    public static double h2f = 0;
+    // --- PID Tuning Parameters (Configurable via Dashboard) ---
+    public static double armP = 0.0055, armI = 0, armD = 0.0002, armF = 0.0011;
+    public static double liftP = 0.01, liftI = 0, liftD = 0.0002, liftF = 0.14;
+    public static double hang1P = 0, hang1I = 0, hang1D = 0, hang1F = 0;
+    public static double hang2P = 0, hang2I = 0, hang2D = 0, hang2F = 0;
 
-    // [Existing Target Positions and Constants Unchanged]
-    public static double target = 100;
-    public static double ltarget = 20;
-    public static double h3target = 0;
-    private final double ticks_in_degree = 2.77;
-    private final double ticks_in_mm = 3.20;
-    private final double h1ticks_in_mm = 3.434;
-    private final double h2ticks_in_mm = 3.434;
+    // --- Target Positions ---
+    public static double armTarget = 100;
+    public static double liftTarget = 20;
+    public static double hangTarget = 0;
 
-    // [Existing Position Presets Unchanged]
-    double armClosed = 10;
-    double armCosSus = 5950;
-    double armCosJos = 5950;
-    double armIntake = 1400;
-    double armIntakeSpecimen = 2000;
-    double armRung = 2100;
-    double armOutTakeRung = 2000;
-    double armHangPos1 = 7140;
-    double armHangPos2 = 8701;
-    double armHang3Down = 10;
-    double armHang3Up = 100;
-    double liftClosed = 10;
-    double liftMax = 1000;
-    double liftCosSus = 1600;
-    double liftCosJos = 500;
-    double clesteDeschis = 0.6;
-    double clesteInchis = 1;
-    double servoTras = 0.4;
-    double servoRetras = 0.6;
-    final double FUDGE_FACTOR = 250;
-    double armPositionFudgeFactor;
+    // --- Constants ---
+    private static final double TICKS_IN_DEGREE = 2.77;
+    private static final double TICKS_IN_MM = 3.20;
+    private static final double HANG_TICKS_IN_MM = 3.434;
+    private static final double FUDGE_FACTOR = 250;
+    private static final double TIME_WINDOW = 0.5;    // Multi-press time window (seconds)
+    private static final double ARM_TOLERANCE = 50;   // Arm position tolerance (ticks)
 
-    // [Existing Timing Variables Unchanged]
-    double cycletime = 0;
-    double looptime = 0;
-    double oldtime = 0;
+    // --- Position Presets ---
+    private static final double ARM_CLOSED = 10;
+    private static final double ARM_COS_SUS = 5950;
+    private static final double ARM_COS_JOS = 5950;
+    private static final double ARM_INTAKE = 1400;
+    private static final double ARM_INTAKE_SPECIMEN = 2000;
+    private static final double ARM_RUNG = 2100;
+    private static final double ARM_OUTTAKE_RUNG = 2000;
+    private static final double ARM_HANG_POS1 = 7140;
+    private static final double ARM_HANG_POS2 = 8701;
+    private static final double ARM_HANG3_DOWN = 10;
+    private static final double ARM_HANG3_UP = 100;
+    private static final double LIFT_CLOSED = 10;
+    private static final double LIFT_MAX = 1000;
+    private static final double LIFT_COS_SUS = 1600;
+    private static final double LIFT_COS_JOS = 500;
+    private static final double CLESTE_DESCHIS = 0.6;
+    private static final double CLESTE_INCHIS = 1;
+    private static final double SERVO_TRAS = 0.4;
+    private static final double SERVO_RETRAS = 0.6;
 
-    // [Existing Multi-Press Variables Unchanged]
-    private static final double TIME_WINDOW = 0.5;
-    private boolean lastYState = false;
-    private int yPressCount = 0;
-    private double lastYTime = 0;
-    private boolean lastAState = false;
-    private int aPressCount = 0;
-    private double lastATime = 0;
-    private boolean lastBState = false;
-    private int bPressCount = 0;
-    private double lastBTime = 0;
-    private boolean lastDpadRightState = false;
-    private int dpadRightPressCount = 0;
-    private double lastDpadRightTime = 0;
+    // --- State Variables ---
+    private double armPositionFudgeFactor = 0;
+    private double cycleTime = 0;
+    private double loopTime = 0;
+    private double oldTime = 0;
 
-    // New Variables for Arm Wait Logic
+    // --- Multi-Press Tracking ---
+    private boolean lastYState, lastAState, lastBState, lastDpadRightState;
+    private int yPressCount, aPressCount, bPressCount, dpadRightPressCount;
+    private double lastYTime, lastATime, lastBTime, lastDpadRightTime;
+
+    // --- Arm Wait Logic ---
     private boolean waitingForArm = false;
-    private static final double ARM_TOLERANCE = 50; // Tolerance in ticks
 
     @Override
     public void init() {
-        // [Existing init() Code Unchanged]
-        controller = new PIDController(p, i, d);
-        lcontroller = new PIDController(lp, li, ld);
-        hang1pid = new PIDController(h1p, h1i, h1d);
-        hang2pid = new PIDController(h2p, h2i, h2d);
+        // Initialize PID controllers
+        armController = new PIDController(armP, armI, armD);
+        liftController = new PIDController(liftP, liftI, liftD);
+        hang1Controller = new PIDController(hang1P, hang1I, hang1D);
+        hang2Controller = new PIDController(hang2P, hang2I, hang2D);
+
+        // Set up telemetry with FTC Dashboard
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        motor_stanga = hardwareMap.get(DcMotorEx.class, "motor_stanga");
-        motor_glisiere = hardwareMap.get(DcMotorEx.class, "motor_glisiere");
-        fata_stanga = hardwareMap.get(DcMotorEx.class, "fata_stanga");
-        fata_dreapta = hardwareMap.get(DcMotorEx.class, "fata_dreapta");
-        spate_stanga = hardwareMap.get(DcMotorEx.class, "spate_stanga");
-        spate_dreapta = hardwareMap.get(DcMotorEx.class, "spate_dreapta");
+
+        // Initialize hardware
+        motorStanga = hardwareMap.get(DcMotorEx.class, "motor_stanga");
+        motorGlisiere = hardwareMap.get(DcMotorEx.class, "motor_glisiere");
+        fataStanga = hardwareMap.get(DcMotorEx.class, "fata_stanga");
+        fataDreapta = hardwareMap.get(DcMotorEx.class, "fata_dreapta");
+        spateStanga = hardwareMap.get(DcMotorEx.class, "spate_stanga");
+        spateDreapta = hardwareMap.get(DcMotorEx.class, "spate_dreapta");
         hang1 = hardwareMap.get(DcMotorEx.class, "hang1");
         hang2 = hardwareMap.get(DcMotorEx.class, "hang2");
         cleste = hardwareMap.get(Servo.class, "cleste");
         servoRotire = hardwareMap.get(Servo.class, "servoRotire");
         hang31 = hardwareMap.get(CRServo.class, "hang31");
         hang32 = hardwareMap.get(CRServo.class, "hang32");
-        motor_stanga.setDirection(DcMotorSimple.Direction.FORWARD);
-        motor_glisiere.setDirection(DcMotorSimple.Direction.REVERSE);
-        fata_stanga.setDirection(DcMotorSimple.Direction.REVERSE);
-        spate_stanga.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        // Configure motor directions
+        motorStanga.setDirection(DcMotorSimple.Direction.FORWARD);
+        motorGlisiere.setDirection(DcMotorSimple.Direction.REVERSE);
+        fataStanga.setDirection(DcMotorSimple.Direction.REVERSE);
+        spateStanga.setDirection(DcMotorSimple.Direction.REVERSE);
         hang2.setDirection(DcMotorSimple.Direction.REVERSE);
-        fata_dreapta.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        fata_stanga.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        spate_dreapta.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        spate_stanga.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        armPositionFudgeFactor = 0;
-        List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
-        for (LynxModule hub : allHubs) {
+
+        // Set brake behavior for drive motors
+        fataDreapta.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        fataStanga.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        spateDreapta.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        spateStanga.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        // Enable bulk caching on all Lynx modules
+        for (LynxModule hub : hardwareMap.getAll(LynxModule.class)) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
     }
 
     @Override
     public void loop() {
-        // [Existing Gamepad and PID Setup Unchanged]
+        // Gamepad setup
         GamepadEx driverOp = new GamepadEx(gamepad1);
         GamepadEx toolOp = new GamepadEx(gamepad2);
-        controller.setPID(p, i, d);
-        lcontroller.setPID(lp, li, ld);
-        hang1pid.setPID(h1p, h1i, h1d);
-        hang2pid.setPID(h2p, h2i, h2d);
-        int armPos = motor_stanga.getCurrentPosition();
-        int liftPos = motor_glisiere.getCurrentPosition();
+
+        // Update PID parameters
+        armController.setPID(armP, armI, armD);
+        liftController.setPID(liftP, liftI, liftD);
+        hang1Controller.setPID(hang1P, hang1I, hang1D);
+        hang2Controller.setPID(hang2P, hang2I, hang2D);
+
+        // Get current motor positions
+        int armPos = motorStanga.getCurrentPosition();
+        int liftPos = motorGlisiere.getCurrentPosition();
         int hang1Pos = hang1.getCurrentPosition();
-        int hang2Pos = hang2.getCurrentPosition();
-        double pid = controller.calculate(armPos, target + armPositionFudgeFactor);
-        double lpid = lcontroller.calculate(liftPos, ltarget);
-        double ff = Math.cos(Math.toRadians((target + armPositionFudgeFactor) / ticks_in_degree)) * f;
-        double lff = lf;
-        double power = pid + ff;
-        double lpower = lpid + lff;
-        double leaderPID = hang1pid.calculate(hang1Pos, h3target);
-        double leaderFF = h1f;
-        double leaderPower = leaderPID + leaderFF;
-        hang1.setPower(leaderPower);
-        hang2.setPower(leaderPower);
 
-        // [Existing Drivetrain Control Unchanged]
-        double y = -gamepad1.left_stick_y;
-        double x = gamepad1.left_stick_x;
-        double rx = gamepad1.right_stick_x;
-        double denominator = Math.max(abs(y) + abs(x) + abs(rx), 1);
-        double frontLeftPower = (y + x + rx) / denominator;
-        double backLeftPower = (y - x + rx) / denominator;
-        double frontRightPower = (y - x - rx) / denominator;
-        double backRightPower = (y + x - rx) / denominator;
-        fata_stanga.setPower(frontLeftPower);
-        spate_stanga.setPower(backLeftPower);
-        fata_dreapta.setPower(frontRightPower);
-        spate_dreapta.setPower(backRightPower);
-        motor_glisiere.setPower(lpower);
-        motor_stanga.setPower(power);
-        hang31.setPower(gamepad1.right_trigger + (-gamepad1.left_trigger));
-        hang32.setPower(gamepad1.right_trigger + (-gamepad1.left_trigger));
-        armPositionFudgeFactor = FUDGE_FACTOR * (gamepad2.right_trigger + (-gamepad2.left_trigger));
+        // Calculate PID and feedforward
+        double armPid = armController.calculate(armPos, armTarget + armPositionFudgeFactor);
+        double liftPid = liftController.calculate(liftPos, liftTarget);
+        double armFF = cos(toRadians((armTarget + armPositionFudgeFactor) / TICKS_IN_DEGREE)) * armF;
+        double liftFF = liftF;
+        double hangPid = hang1Controller.calculate(hang1Pos, hangTarget);
+        double hangFF = hang1F;
 
-        // [Existing Lift Manual Control Unchanged]
-        if (gamepad2.right_bumper) {
-            ltarget += 20;
-        }
-        if (gamepad2.left_bumper) {
-            ltarget -= 20;
-        }
+        // Apply power to motors
+        motorStanga.setPower(armPid + armFF);
+        motorGlisiere.setPower(liftPid + liftFF);
+        hang1.setPower(hangPid + hangFF);
+        hang2.setPower(hangPid + hangFF); // Sync hang2 with hang1
 
-        // [Existing Arm and Lift Presets Unchanged]
+        // Drivetrain control
+        double driveY = -gamepad1.left_stick_y;
+        double driveX = gamepad1.left_stick_x;
+        double driveRx = gamepad1.right_stick_x;
+        double denominator = Math.max(abs(driveY) + abs(driveX) + abs(driveRx), 1);
+        fataStanga.setPower((driveY + driveX + driveRx) / denominator);
+        spateStanga.setPower((driveY - driveX + driveRx) / denominator);
+        fataDreapta.setPower((driveY - driveX - driveRx) / denominator);
+        spateDreapta.setPower((driveY + driveX - driveRx) / denominator);
+
+        // Hang servos control
+        double hangServoPower = gamepad1.right_trigger - gamepad1.left_trigger;
+        hang31.setPower(hangServoPower);
+        hang32.setPower(hangServoPower);
+
+        // Update fudge factor
+        armPositionFudgeFactor = FUDGE_FACTOR * (gamepad2.right_trigger - gamepad2.left_trigger);
+
+        // Lift manual control
+        if (gamepad2.right_bumper) liftTarget += 20;
+        if (gamepad2.left_bumper) liftTarget -= 20;
+
+        // Arm and lift presets
         if (gamepad2.dpad_left) {
-            target = armIntake;
-            ltarget = liftClosed;
+            armTarget = ARM_INTAKE;
+            liftTarget = LIFT_CLOSED;
         }
         if (gamepad2.dpad_right) {
-            target = armClosed;
-            ltarget = liftClosed;
+            armTarget = ARM_CLOSED;
+            liftTarget = LIFT_CLOSED;
         }
         if (gamepad2.dpad_up) {
-            target = armCosSus;
-            if (armPos > 4000) {
-                ltarget = liftCosSus;
-            }
+            armTarget = ARM_COS_SUS;
+            if (armPos > 4000) liftTarget = LIFT_COS_SUS;
         }
         if (gamepad2.dpad_down) {
-            target = armCosJos;
-            ltarget = liftClosed;
+            armTarget = ARM_COS_JOS;
+            liftTarget = LIFT_CLOSED;
         }
 
-        // [Existing Multi-Press Logic for gamepad2.y Unchanged]
-        boolean currentYState = gamepad2.y;
-        if (currentYState && !lastYState) {
-            double currentTime = getRuntime();
-            if (currentTime - lastYTime <= TIME_WINDOW) {
-                yPressCount++;
-            } else {
-                yPressCount = 1;
-            }
-            lastYTime = currentTime;
-        }
-        if (!currentYState && lastYState && (getRuntime() - lastYTime > TIME_WINDOW)) {
+        // Multi-press for gamepad2.y (Specimen sequence)
+        updateMultiPress(gamepad2.y, lastYState, yPressCount, lastYTime, () -> {
             switch (yPressCount) {
-                case 1:
-                    target = armIntakeSpecimen;
-                    break;
-                case 2:
-                    target = armRung;
-                    break;
+                case 1: armTarget = ARM_INTAKE_SPECIMEN; break;
+                case 2: armTarget = ARM_RUNG; break;
             }
-            yPressCount = 0;
-        }
-        lastYState = currentYState;
+        }, () -> lastYState = gamepad2.y);
 
-        // Updated gamepad2.x Logic with Wait for Arm
-        if (gamepad2.x && target == armRung) {
-            target = armOutTakeRung;
-            waitingForArm = true; // Start waiting for arm to reach target
+        // gamepad2.x with arm wait logic
+        if (gamepad2.x && armTarget == ARM_RUNG) {
+            armTarget = ARM_OUTTAKE_RUNG;
+            waitingForArm = true;
             gamepad1.rumble(1000);
         }
-        // Check if arm has reached target and open claw
-        if (waitingForArm && Math.abs(armPos - armOutTakeRung) <= ARM_TOLERANCE) {
-            cleste.setPosition(clesteDeschis);
-            waitingForArm = false; // Reset flag after action
+        if (waitingForArm && abs(armPos - ARM_OUTTAKE_RUNG) <= ARM_TOLERANCE) {
+            cleste.setPosition(CLESTE_DESCHIS);
+            waitingForArm = false;
         }
 
-        // [Existing Multi-Press Logic for gamepad2.a Unchanged]
-        boolean currentAState = gamepad2.a;
-        if (currentAState && !lastAState) {
-            double currentTime = getRuntime();
-            if (currentTime - lastATime <= TIME_WINDOW) {
-                aPressCount++;
-            } else {
-                aPressCount = 1;
-            }
-            lastATime = currentTime;
-        }
-        if (!currentAState && lastAState && (getRuntime() - lastATime > TIME_WINDOW)) {
+        // Multi-press for gamepad2.a (Claw toggle)
+        updateMultiPress(gamepad2.a, lastAState, aPressCount, lastATime, () -> {
             switch (aPressCount) {
                 case 1:
-                    cleste.setPosition(clesteInchis);
+                    cleste.setPosition(CLESTE_INCHIS);
                     gamepad1.rumble(1000);
                     break;
                 case 2:
-                    cleste.setPosition(clesteDeschis);
+                    cleste.setPosition(CLESTE_DESCHIS);
                     break;
             }
-            aPressCount = 0;
-        }
-        lastAState = currentAState;
+        }, () -> lastAState = gamepad2.a);
 
-        // [Existing Multi-Press Logic for gamepad2.b Unchanged]
-        boolean currentBState = gamepad2.b;
-        if (currentBState && !lastBState) {
-            double currentTime = getRuntime();
-            if (currentTime - lastBTime <= TIME_WINDOW) {
-                bPressCount++;
-            } else {
-                bPressCount = 1;
-            }
-            lastBTime = currentTime;
-        }
-        if (!currentBState && lastBState && (getRuntime() - lastBTime > TIME_WINDOW)) {
+        // Multi-press for gamepad2.b (Servo rotation)
+        updateMultiPress(gamepad2.b, lastBState, bPressCount, lastBTime, () -> {
             switch (bPressCount) {
-                case 1:
-                    servoRotire.setPosition(servoTras);
-                    break;
-                case 2:
-                    servoRotire.setPosition(servoRetras);
-                    break;
+                case 1: servoRotire.setPosition(SERVO_TRAS); break;
+                case 2: servoRotire.setPosition(SERVO_RETRAS); break;
             }
-            bPressCount = 0;
-        }
-        lastBState = currentBState;
+        }, () -> lastBState = gamepad2.b);
 
-        // [Existing Multi-Press Logic for gamepad1.dpad_right Unchanged]
-        boolean currentDpadRightState = gamepad1.dpad_right;
-        if (currentDpadRightState && !lastDpadRightState) {
-            double currentTime = getRuntime();
-            if (currentTime - lastDpadRightTime <= TIME_WINDOW) {
-                dpadRightPressCount++;
-            } else {
-                dpadRightPressCount = 1;
-            }
-            lastDpadRightTime = currentTime;
-        }
-        if (!currentDpadRightState && lastDpadRightState && (getRuntime() - lastDpadRightTime > TIME_WINDOW)) {
+        // Multi-press for gamepad1.dpad_right (Ascent 2)
+        updateMultiPress(gamepad1.dpad_right, lastDpadRightState, dpadRightPressCount, lastDpadRightTime, () -> {
             switch (dpadRightPressCount) {
-                case 1:
-                    target = armHangPos1;
-                    break;
-                case 2:
-                    if (armPos > 8600) {
-                        target = armHangPos2;
-                    }
-                    break;
+                case 1: armTarget = ARM_HANG_POS1; break;
+                case 2: if (armPos > 8600) armTarget = ARM_HANG_POS2; break;
             }
-            dpadRightPressCount = 0;
-        }
-        lastDpadRightState = currentDpadRightState;
+        }, () -> lastDpadRightState = gamepad1.dpad_right);
 
-        // [Existing Unchanged Controls]
-        if (gamepad1.dpad_left && armPos > 8600) {
-            target = armClosed;
-        }
-        if (gamepad1.dpad_up) {
-            h3target = armHang3Up;
-        }
-        if (gamepad1.dpad_down) {
-            h3target = armHang3Down;
-        }
+        // Additional controls
+        if (gamepad1.dpad_left && armPos > 8600) armTarget = ARM_CLOSED;
+        if (gamepad1.dpad_up) hangTarget = ARM_HANG3_UP;
+        if (gamepad1.dpad_down) hangTarget = ARM_HANG3_DOWN;
 
-        // [Existing Limits Unchanged]
-        if (liftPos > liftCosSus) {
-            ltarget = ltarget - abs(liftCosSus - ltarget);
-        }
-        if (liftPos < 20) {
-            ltarget = ltarget + abs(0 - ltarget);
-        }
+        // Enforce position limits
+        if (liftPos > LIFT_COS_SUS) liftTarget -= abs(LIFT_COS_SUS - liftTarget);
+        if (liftPos < 20) liftTarget += abs(0 - liftTarget);
         if (armPos < 0) {
-            target = 0;
+            armTarget = 0;
             armPositionFudgeFactor = 0;
         }
 
-        // [Existing Rumble Logic Unchanged]
-        if (looptime > 75) {
+        // Rumble feedback for long loop times
+        if (loopTime > 75) {
             gamepad1.rumble(1500);
             gamepad2.rumble(1500);
         }
 
-        // [Existing Timing and Telemetry Unchanged]
-        looptime = getRuntime();
-        cycletime = looptime - oldtime;
-        oldtime = looptime;
+        // Update timing
+        loopTime = getRuntime();
+        cycleTime = loopTime - oldTime;
+        oldTime = loopTime;
+
+        // Telemetry output
         telemetry.addLine("PETUNIX");
-        telemetry.addData("pos arm", armPos);
-        telemetry.addData("lift pos", liftPos);
-        telemetry.addData("hang3 pos", hang1Pos);
+        telemetry.addData("Arm Position", armPos);
+        telemetry.addData("Lift Position", liftPos);
+        telemetry.addData("Hang Position", hang1Pos);
         telemetry.addLine("ROBOPEDA");
         telemetry.addLine("CIUPA, LUCAS & GEORGE");
         telemetry.addLine("PETUNIX");
         telemetry.update();
+    }
+
+    // Helper method for multi-press logic
+    private void updateMultiPress(boolean currentState, boolean lastState, int pressCountField,
+                                  double lastTimeField, Runnable action, Runnable updateState) {
+        int pressCount = pressCountField;
+        double lastTime = lastTimeField;
+
+        if (currentState && !lastState) {
+            double currentTime = getRuntime();
+            pressCount = (currentTime - lastTime <= TIME_WINDOW) ? pressCount + 1 : 1;
+            lastTime = currentTime;
+        }
+        if (!currentState && lastState && (getRuntime() - lastTime > TIME_WINDOW)) {
+            action.run();
+            pressCount = 0;
+        }
+
+        // Update fields via reflection-like assignment
+        if (currentState != lastState) {
+            updateState.run();
+            if (pressCountField == yPressCount) yPressCount = pressCount;
+            else if (pressCountField == aPressCount) aPressCount = pressCount;
+            else if (pressCountField == bPressCount) bPressCount = pressCount;
+            else if (pressCountField == dpadRightPressCount) dpadRightPressCount = pressCount;
+            if (lastTimeField == lastYTime) lastYTime = lastTime;
+            else if (lastTimeField == lastATime) lastATime = lastTime;
+            else if (lastTimeField == lastBTime) lastBTime = lastTime;
+            else if (lastTimeField == lastDpadRightTime) lastDpadRightTime = lastTime;
+        }
     }
 }
