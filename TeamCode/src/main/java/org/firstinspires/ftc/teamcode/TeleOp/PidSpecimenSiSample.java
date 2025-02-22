@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.TeleOp;
 import static java.lang.Math.abs;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
@@ -17,6 +18,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import java.util.List;
 
+@Config
 @TeleOp
 public class PidSpecimenSiSample extends OpMode {
 
