@@ -60,10 +60,9 @@ public class PID extends OpMode {
     public static double h2f = 0;
 
     // Target Positions
-    public static double target = 0;
-    public static double ltarget = 0;
-    public static double h1target = 0;
-    public static int h2target = 0;
+    public static double target = 100;
+    public static double ltarget = 20;
+    public static double h3target = 0;
 
     // Conversion Constants
     private final double ticks_in_degree = 2.77;
@@ -177,7 +176,7 @@ public class PID extends OpMode {
         double lpower = lpid + lff;
 
         // Hang motors sync
-        double leaderPID = hang1pid.calculate(hang1Pos, h1target);
+        double leaderPID = hang1pid.calculate(hang1Pos, h3target);
         double leaderFF = h1f;
         double leaderPower = leaderPID + leaderFF;
         hang1.setPower(leaderPower);
@@ -245,10 +244,10 @@ public class PID extends OpMode {
             target = armClosed;
         }
         if(gamepad1.dpad_up){
-            h1target = armHang3Up;
+            h3target = armHang3Up;
         }
         if(gamepad1.dpad_down){
-            h1target = armHang3Down;
+            h3target = armHang3Down;
         }
 
         // Enforce limits
@@ -283,10 +282,13 @@ public class PID extends OpMode {
         oldtime = looptime;
 
         // Telemetry
+        telemetry.addLine("PETUNIX");
         telemetry.addData("pos arm", armPos);
         telemetry.addData("lift pos", liftPos);
-        telemetry.addData("h1 pos", hang1Pos);
-        telemetry.addData("h2 pos", hang2Pos);
+        telemetry.addData("hang3 pos", hang1Pos);
+        telemetry.addLine("ROBOPEDA");
+        telemetry.addLine("CIUPA, LUCAS & GEORGE");
+        telemetry.addLine("PETUNIX");
         telemetry.update();
     }
 }
