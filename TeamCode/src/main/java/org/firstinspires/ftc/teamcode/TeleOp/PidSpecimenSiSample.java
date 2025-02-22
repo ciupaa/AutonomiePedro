@@ -292,6 +292,10 @@ public class PidSpecimenSiSample extends OpMode {
         if (gamepad2.b && servoRotire.getPosition() == servoTras) {
             servoRotire.setPosition(servoRetras);
         }
+        if(looptime > 75) {
+            gamepad1.rumble(1500);
+            gamepad2.rumble(1500);
+        }
 
         // Update timing
         looptime = getRuntime();

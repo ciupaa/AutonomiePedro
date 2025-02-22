@@ -22,31 +22,28 @@ public class Lift extends Subsystem {
     // USER CODE
     public MotorEx motor_glisiere;
 
-
-
-   // public PIDFController controller = new PIDFController(new PIDCoefficients(0.005, 0.0, 0.0));
+    // public PIDFController controller = new PIDFController(new PIDCoefficients(0.005, 0.0, 0.0));
    // public PIDControllerWrapper controller = new PIDControllerWrapper(new PIDController(0.01, 0, 0.0002));
 
     public PIDControllerWrapper lcontroller = new PIDControllerWrapper(new PIDController(0.01, 0, 0.0002), 0.14, 50);
     public String name = "motor_glisiere";
-
     public Command toLow() {
         return new RunToPosition(motor_glisiere, // MOTOR TO MOVE
-                -10, // TARGET POSITION, IN TICKS
+                10, // TARGET POSITION, IN TICKS
                 lcontroller, // CONTROLLER TO IMPLEMENT
                 this); // IMPLEMENTED SUBSYSTEM
     }
 
     public Command toMiddle() {
         return new RunToPosition(motor_glisiere, // MOTOR TO MOVE
-                -500, // TARGET POSITION, IN TICKS
+                500, // TARGET POSITION, IN TICKS
                 lcontroller, // CONTROLLER TO IMPLEMENT
                 this); // IMPLEMENTED SUBSYSTEM
     }
 
     public Command toHigh() {
         return new RunToPosition(motor_glisiere, // MOTOR TO MOVE
-                -1600, // TARGET POSITION, IN TICKS
+                1600, // TARGET POSITION, IN TICKS
                 lcontroller, // CONTROLLER TO IMPLEMENT
                 this); // IMPLEMENTED SUBSYSTEM
     }
@@ -54,7 +51,6 @@ public class Lift extends Subsystem {
     @Override
     public void initialize() {
         motor_glisiere = new MotorEx(name);
+        motor_glisiere.setDirection(DcMotorSimple.Direction.REVERSE);
     }
-
-
 }
