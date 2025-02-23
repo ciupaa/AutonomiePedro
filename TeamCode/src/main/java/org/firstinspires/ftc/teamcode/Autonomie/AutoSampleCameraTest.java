@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Autonomie;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
 import com.pedropathing.pathgen.BezierCurve;
@@ -11,6 +12,7 @@ import com.pedropathing.util.Constants;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.rowanmcalpin.nextftc.core.command.Command;
 import com.rowanmcalpin.nextftc.core.command.groups.ParallelGroup;
 import com.rowanmcalpin.nextftc.core.command.groups.SequentialGroup;
@@ -26,12 +28,14 @@ import org.firstinspires.ftc.teamcode.SubSystems.ServoRotire;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 
-import java.util.concurrent.TimeUnit;
-
-
 @Config
 @Autonomous(name = "AutoSample")
 
+DcMotorEx fata_stanga;
+DcMotorEx fata_dreapta;
+DcMotorEx spate_stanga;
+DcMotorEx spate_dreapta;
+DcMotorEx motor_glisiere;
 
 public class AutoSampleCameraTest extends PedroOpMode {
     private Limelight3A limelight;
@@ -255,17 +259,23 @@ public class AutoSampleCameraTest extends PedroOpMode {
             ty = result.getTy();
 
             if (tx > 0) {
-                // STRAFE LA DREAPATA cu adjusted tx (depinde de pozitia camerei pe robot)
+                fata_dreapta.setPower(-);
+                fata_stanga.setPower(+);
+                spate_dreapta.setPower(+);
+                spate_stanga.setPower(-);
             }
             else {
-                //STRAFE LA STANGA cu abs(adjusted tx) (depinde de pozitia camerei pe robot)
+                fata_dreapta.setPower(+);
+                fata_stanga.setPower(-);
+                spate_dreapta.setPower(-);
+                spate_stanga.setPower(+);
             }
 
             if (ty > 0) {
-                // GLISIERA IN SUS cu adjusted ty (depinde de pozitia camerei pe robot)
+                motor_glisiere.setPower(+);
             }
             else {
-                // GLISIERA IN JOS cu abs(adjusted ty) (depinde de pozitia camerei pe robot)
+                motor_glisiere.setPower(-);
             }
 
             Pose3D botpose = result.getBotpose();
@@ -296,6 +306,12 @@ public class AutoSampleCameraTest extends PedroOpMode {
         limelight.setPollRateHz(100);
         limelight.start();
         limelight.pipelineSwitch(0);
+
+        fata_stanga = hardwareMap.get(DcMotorEx.class, "fata_stanga");
+        fata_dreapta = hardwareMap.get(DcMotorEx.class, "fata_dreapta");
+        spate_stanga = hardwareMap.get(DcMotorEx.class, "spate_stanga");
+        spate_dreapta = hardwareMap.get(DcMotorEx.class, "spate_dreapta");
+        motor_glisiere = hardwareMap.get(DcMotorEx.class, "motor_glisiere");
     }
 
     @Override
