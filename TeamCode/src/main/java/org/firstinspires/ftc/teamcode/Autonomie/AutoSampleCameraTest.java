@@ -198,6 +198,8 @@ public class AutoSampleCameraTest extends PedroOpMode {
 
                 ServoRotire.INSTANCE.outtake(),
                 Claw.INSTANCE.open()
+
+                // detectAndApproachSample();
         );
     }
 
@@ -216,7 +218,6 @@ public class AutoSampleCameraTest extends PedroOpMode {
     @Override
     public void onStartButtonPressed() {
         secondRoutine().invoke();
-        detectAndApproachSample();
     }
 
     public void detectAndApproachSample() {
@@ -239,6 +240,10 @@ public class AutoSampleCameraTest extends PedroOpMode {
             Claw.INSTANCE.close();
 
             return;
+        }
+
+        else  {
+            // Invarte robotul incet, pana vede un sample
         }
 
         // Drum de la pozitia curenta la {15.252, 128.523, 135} adica pozitia de score
