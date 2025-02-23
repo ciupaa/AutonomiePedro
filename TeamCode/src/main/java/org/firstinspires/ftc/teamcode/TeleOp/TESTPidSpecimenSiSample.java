@@ -66,7 +66,7 @@ public class TESTPidSpecimenSiSample extends OpMode {
     private static final double ARM_CLOSED = 10;
     private static final double ARM_COS_SUS = 5950;
     private static final double ARM_COS_JOS = 5950;
-    private static final double ARM_INTAKE = 1400;
+    private static final double ARM_INTAKE = 100;
     private static final double ARM_INTAKE_SPECIMEN = 2000;
     private static final double ARM_RUNG = 2100;
     private static final double ARM_OUTTAKE_RUNG = 2000;
