@@ -31,6 +31,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 
 public class AutoSampleCameraTest extends PedroOpMode {
     private Limelight3A limelight;
+
     public AutoSampleCameraTest() {
         super(Claw.INSTANCE, Lift.INSTANCE, ServoRotire.INSTANCE, Arm.INSTANCE);
     }
@@ -221,51 +222,30 @@ public class AutoSampleCameraTest extends PedroOpMode {
     public void detectAndApproachSample() {
         LLResult result = limelight.getLatestResult(); // Get the latest result from Limelight
 
-        if (result != null && result.isValid()) { // Check if result is valid
-            // Accessing the target details from the result
-            double targetX = result.getTx(); // Get target X position (horizontal offset)
-            double targetY = result.getTy(); // Get target Y position (vertical offset)
+        if (result != null && result.isValid()) {
+            double Tx = result.getTx();
+            double Ty = result.getTy();
 
-            telemetry.addData("Limelight Target", "X: %.2f, Y: %.2f", targetX, targetY);
+            while (Tx != 0) {
+                // Strafe dreapta sau stanga, in functie de valoare pozitiva sau negativa TX
+            }
 
-            // If the number of targets is above a threshold, proceed to move towards it
-            moveToSample(targetX, targetY);
-        } else {
-            telemetry.addData("Limelight", "No valid data from Limelight.");
+            while (Ty != 10) { // cat de departe sa fie robotul de target
+                // Drive Forward daca este prea departe / Backwards daca este prea aproape
+            }
+
+            Arm.INSTANCE.toIntake();
+            Lift.INSTANCE.toLow();
+            Claw.INSTANCE.close();
+
+            return;
         }
 
-        telemetry.update();  // Display telemetry data
-    }
+        // Drum de la pozitia curenta la {15.252, 128.523, 135} adica pozitia de score
+        Arm.INSTANCE.toHigh();
+        Lift.INSTANCE.toHigh();
+        Claw.INSTANCE.close();
 
-
-    public void moveToSample(double targetX, double targetY) {
-        // Assuming that targetX and targetY are the offset values of the target
-        double moveDistance = 10; // Example: Move 10 inches away from the target
-
-        // Convert offset (in degrees) to movement distance
-        double forwardSpeed = (targetY > 0) ? 0.5 : -0.5;  // Forward or backward depending on Y
-        double turnSpeed = targetX > 0 ? 0.3 : -0.3; // Turn towards the target X
-
-        // Use your robot's movement logic to move it closer
-        driveRobot(forwardSpeed, turnSpeed);
-    }
-
-    // Simple movement function
-    public void driveRobot(double forwardSpeed, double turnSpeed) {
-        // Adjust motor powers for robot drive system
-        // For example:
-        // leftDrive.setPower(forwardSpeed + turnSpeed);
-        // rightDrive.setPower(forwardSpeed - turnSpeed);
-    }
-
-    // Function to keep tracking the target if not within range
-    public void keepTrackingTarget(double targetX, double targetY) {
-        double turnSpeed = targetX > 0 ? 0.3 : -0.3;
-        driveRobot(0, turnSpeed); // Adjust robot to face the target
-    }
-
-    @Override
-    public void onStop() {
-        limelight.stop();
+        // Loop la functie
     }
 }
