@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Autonomie;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
 import com.pedropathing.pathgen.BezierCurve;
@@ -11,8 +12,11 @@ import com.pedropathing.util.Constants;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.rowanmcalpin.nextftc.core.command.Command;
 import com.rowanmcalpin.nextftc.core.command.groups.ParallelGroup;
 import com.rowanmcalpin.nextftc.core.command.groups.SequentialGroup;
+import com.rowanmcalpin.nextftc.core.command.utility.delays.Delay;
 import com.rowanmcalpin.nextftc.pedro.FollowPath;
 import com.rowanmcalpin.nextftc.pedro.PedroOpMode;
 
@@ -24,10 +28,14 @@ import org.firstinspires.ftc.teamcode.SubSystems.ServoRotire;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 
-
 @Config
 @Autonomous(name = "AutoSample")
 
+DcMotorEx fata_stanga;
+DcMotorEx fata_dreapta;
+DcMotorEx spate_stanga;
+DcMotorEx spate_dreapta;
+DcMotorEx motor_glisiere;
 
 public class AutoSampleCameraTest extends PedroOpMode {
     private Limelight3A limelight;
@@ -36,7 +44,7 @@ public class AutoSampleCameraTest extends PedroOpMode {
         super(Claw.INSTANCE, Lift.INSTANCE, ServoRotire.INSTANCE, Arm.INSTANCE);
     }
 
-    private PathChain scorePreload, grabPickup1, scorePickup1, grabPickup2, scorePickup2, grabPickup3, scorePickup3, Park;
+    private PathChain scorePreload, grabPickup1, scorePickup1, grabPickup2, scorePickup2, grabPickup3, scorePickup3, Park, Mijloc, toScore;
 
     public void buildPaths() {
         scorePreload = follower.pathBuilder()
@@ -128,9 +136,21 @@ public class AutoSampleCameraTest extends PedroOpMode {
                 )
                 .setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(90))
                 .build();
+
+        Mijloc = follower.pathBuilder()
+                .addPath(
+                        // Line 1
+                        new BezierCurve(
+                                new Point(15.252, 128.523, Point.CARTESIAN),
+                                new Point(62.338, 113.419, Point.CARTESIAN),
+                                new Point(64.019, 95.500, Point.CARTESIAN)
+                        )
+                )
+                .setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(270))
+                .build();
     }
 
-    public SequentialGroup secondRoutine() {
+    public Command secondRoutine() {
         return new SequentialGroup(
                 Claw.INSTANCE.close(),
                 new ParallelGroup(
@@ -197,10 +217,82 @@ public class AutoSampleCameraTest extends PedroOpMode {
                 ),
 
                 ServoRotire.INSTANCE.outtake(),
-                Claw.INSTANCE.open()
+                Claw.INSTANCE.open(),
 
-                // detectAndApproachSample();
+                new ParallelGroup(
+                        new FollowPath(Mijloc),
+                        Arm.INSTANCE.toIntake(),
+                        Lift.INSTANCE.toLow()
+                ),
+
+                new ParallelGroup(
+                    Lift.INSTANCE.toMiddle(),
+                    ServoRotire.INSTANCE.intake()
+                ),
+
+                Camera(),
+
+                Arm.INSTANCE.toLow(),
+                Claw.INSTANCE.close(),
+
+                Arm.INSTANCE.toIntake(),
+                Lift.INSTANCE.toLow(),
+
+                new ParallelGroup(
+                        new FollowPath(toScore),
+                        Arm.INSTANCE.toHigh(),
+                        Lift.INSTANCE.toHigh(),
+                        ServoRotire.INSTANCE.outtake()
+                ),
+
+                Claw.INSTANCE.open()
         );
+    }
+
+    public void Camera() {
+        LLResult result = limelight.getLatestResult();
+
+        double ty, tx, CurrentX, CurrentY;
+
+        if (result != null && result.isValid()) {
+            tx = result.getTx();
+            ty = result.getTy();
+
+            if (tx > 0) {
+                fata_dreapta.setPower(-);
+                fata_stanga.setPower(+);
+                spate_dreapta.setPower(+);
+                spate_stanga.setPower(-);
+            }
+            else {
+                fata_dreapta.setPower(+);
+                fata_stanga.setPower(-);
+                spate_dreapta.setPower(-);
+                spate_stanga.setPower(+);
+            }
+
+            if (ty > 0) {
+                motor_glisiere.setPower(+);
+            }
+            else {
+                motor_glisiere.setPower(-);
+            }
+
+            Pose3D botpose = result.getBotpose();
+
+            CurrentX = botpose.getPosition().x;
+            CurrentY = botpose.getPosition().y;
+
+            toScore = follower.pathBuilder()
+                    .addPath(
+                            new BezierLine(
+                                    new Point(CurrentX, CurrentY, Point.CARTESIAN),
+                                    new Point(15.252, 128.523, Point.CARTESIAN)
+                            )
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(270), Math.toRadians(135))
+                    .build();
+        }
     }
 
     @Override
@@ -211,46 +303,19 @@ public class AutoSampleCameraTest extends PedroOpMode {
         buildPaths();
 
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        telemetry.setMsTransmissionInterval(11);
+        limelight.setPollRateHz(100);
+        limelight.start();
         limelight.pipelineSwitch(0);
+
+        fata_stanga = hardwareMap.get(DcMotorEx.class, "fata_stanga");
+        fata_dreapta = hardwareMap.get(DcMotorEx.class, "fata_dreapta");
+        spate_stanga = hardwareMap.get(DcMotorEx.class, "spate_stanga");
+        spate_dreapta = hardwareMap.get(DcMotorEx.class, "spate_dreapta");
+        motor_glisiere = hardwareMap.get(DcMotorEx.class, "motor_glisiere");
     }
 
     @Override
     public void onStartButtonPressed() {
         secondRoutine().invoke();
-    }
-
-    public void detectAndApproachSample() {
-        LLResult result = limelight.getLatestResult(); // Get the latest result from Limelight
-
-        if (result != null && result.isValid()) {
-            double Tx = result.getTx();
-            double Ty = result.getTy();
-
-            while (Tx != 0) {
-                // Strafe dreapta sau stanga, in functie de valoare pozitiva sau negativa TX
-            }
-
-            while (Ty != 10) { // cat de departe sa fie robotul de target
-                // Drive Forward daca este prea departe / Backwards daca este prea aproape
-            }
-
-            Arm.INSTANCE.toIntake();
-            Lift.INSTANCE.toLow();
-            Claw.INSTANCE.close();
-
-            return;
-        }
-
-        else  {
-            // Invarte robotul incet, pana vede un sample
-        }
-
-        // Drum de la pozitia curenta la {15.252, 128.523, 135} adica pozitia de score
-        Arm.INSTANCE.toHigh();
-        Lift.INSTANCE.toHigh();
-        Claw.INSTANCE.close();
-
-        // Loop la functie
     }
 }
