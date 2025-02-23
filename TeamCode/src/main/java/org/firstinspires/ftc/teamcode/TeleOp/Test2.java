@@ -68,7 +68,7 @@ public class Test2 extends OpMode {
 
     // Position Presets
     double armClosed = 10;
-    double armMax = 1000;
+    double armMax = 8800;
     double armCosSus = 5950;
     double armCosJos = 5950;
     double armIntake = 1400;
@@ -104,7 +104,6 @@ public class Test2 extends OpMode {
     double looptime = 0;
     double oldtime = 0;
 
-    // Proportional Arm-Lift Constants
     private static final double LIFT_MIN = 10;          // Starting lift position
     private static final double LIFT_MAX_EXT = 1570;    // Max lift position
     private static final double ARM_MIN = 100;          // Starting arm position
@@ -294,15 +293,20 @@ public class Test2 extends OpMode {
         // Servo controls
         if(gamepad2.a && cnt_a % 2 == 0){
             cleste.setPosition(clesteDeschis);
+            cnt_a++;
         }if(gamepad2.a && cnt_a % 2 == 1){
             cleste.setPosition(clesteInchis);
+            gamepad1.rumble(1000);
+            cnt_a++;
+
         }
 
         if(gamepad2.b && cnt_b % 2 == 0){
             servoRotire.setPosition(servoTras);
+            cnt_b++;
         }if(gamepad2.b && cnt_b % 2 == 1){
             servoRotire.setPosition(servoRetras);
-
+            cnt_b++;
         }
         if(gamepad2.y && cnt_y % 2 == 0){
             target = ARM_INTAKE_SPECIMEN;
@@ -315,7 +319,10 @@ public class Test2 extends OpMode {
             cnt_x++;
             target = ARM_OUTTAKE_RUNG;
         }
-
+        if (looptime > 75) {
+            gamepad1.rumble(2000);
+            gamepad2.rumble(2000);
+        }
         // Update timing
         looptime = getRuntime();
         cycletime = looptime - oldtime;
