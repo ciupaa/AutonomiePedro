@@ -93,6 +93,10 @@ public class Test2 extends OpMode {
     final double FUDGE_FACTOR = 1000;
     double armPositionFudgeFactor;
 
+    // Encoder Error Constants
+    private final double ARM_ENCODER_ERROR = 100; // ±100 ticks for arm
+    private final double LIFT_ENCODER_ERROR = 10; // ±10 ticks for lift
+
     private int cnt_a = 0;
     private int cnt_b = 0;
     private int cnt_x = 0;
@@ -172,11 +176,19 @@ public class Test2 extends OpMode {
         hang1pid.setPID(h1p, h1i, h1d);
         hang2pid.setPID(h2p, h2i, h2d);
 
-        // Get current positions
-        int armPos = motor_stanga.getCurrentPosition();
-        int liftPos = motor_glisiere.getCurrentPosition();
+        // Get current positions with simulated encoder error bounds
+        int rawArmPos = motor_stanga.getCurrentPosition();
+        int rawLiftPos = motor_glisiere.getCurrentPosition();
         int hang1Pos = hang1.getCurrentPosition();
         int hang2Pos = hang2.getCurrentPosition();
+
+        // Define position ranges due to encoder errors (for telemetry and awareness)
+        double armPosMin = rawArmPos - ARM_ENCODER_ERROR;
+        double armPosMax = rawArmPos + ARM_ENCODER_ERROR;
+        double liftPosMin = rawLiftPos - LIFT_ENCODER_ERROR;
+        double liftPosMax = rawLiftPos + LIFT_ENCODER_ERROR;
+        double armPos = rawArmPos; // Use raw position for control, but error affects accuracy
+        double liftPos = rawLiftPos;
 
         // Calculate PID and feedforward
         double pid = controller.calculate(armPos, target + armPositionFudgeFactor);
@@ -205,12 +217,10 @@ public class Test2 extends OpMode {
 
         // Automatic arm adjustment when in intake mode
         if (isIntakeMode && liftPos > LIFT_MIN) {
-            // Calculate proportional arm target based on actual lift position
             double liftRange = LIFT_MAX_EXT - LIFT_MIN;
             double armRange = ARM_MIN_FOR_MAX_LIFT - ARM_MIN;
             double liftProgress = (liftPos - LIFT_MIN) / liftRange;
             double newArmTarget = ARM_MIN + (liftProgress * armRange);
-            // Ensure arm doesn't go below minimum or above maximum
             target = Math.max(ARM_MIN, Math.min(armMax, newArmTarget));
         }
 
@@ -291,31 +301,32 @@ public class Test2 extends OpMode {
         }
 
         // Servo controls
-        if(gamepad2.a && cnt_a % 2 == 0){
+        if (gamepad2.a && cnt_a % 2 == 0) {
             cleste.setPosition(clesteDeschis);
             cnt_a++;
-        }if(gamepad2.a && cnt_a % 2 == 1){
+        }
+        if (gamepad2.a && cnt_a % 2 == 1) {
             cleste.setPosition(clesteInchis);
             gamepad1.rumble(1000);
             cnt_a++;
-
         }
-
-        if(gamepad2.b && cnt_b % 2 == 0){
+        if (gamepad2.b && cnt_b % 2 == 0) {
             servoRotire.setPosition(servoTras);
             cnt_b++;
-        }if(gamepad2.b && cnt_b % 2 == 1){
+        }
+        if (gamepad2.b && cnt_b % 2 == 1) {
             servoRotire.setPosition(servoRetras);
             cnt_b++;
         }
-        if(gamepad2.y && cnt_y % 2 == 0){
+        if (gamepad2.y && cnt_y % 2 == 0) {
             target = ARM_INTAKE_SPECIMEN;
             cnt_y++;
-        }if(gamepad2.x && cnt_x % 2 == 1){
+        }
+        if (gamepad2.x && cnt_x % 2 == 1) {
             cnt_x++;
             target = ARM_RUNG;
         }
-        if(gamepad2.x && cnt_x % 2 == 0){
+        if (gamepad2.x && cnt_x % 2 == 0) {
             cnt_x++;
             target = ARM_OUTTAKE_RUNG;
         }
@@ -323,16 +334,21 @@ public class Test2 extends OpMode {
             gamepad1.rumble(2000);
             gamepad2.rumble(2000);
         }
+
         // Update timing
         looptime = getRuntime();
         cycletime = looptime - oldtime;
         oldtime = looptime;
 
-        // Telemetry
+        // Telemetry with encoder error ranges
         telemetry.addLine("PETUNIX");
-        telemetry.addData("pos arm", armPos);
-        telemetry.addData("lift pos", liftPos);
-        telemetry.addData("hang3 pos", hang1Pos);
+        telemetry.addData("Arm Target", target);
+        telemetry.addData("Arm Pos (raw)", rawArmPos);
+        telemetry.addData("Arm Pos Range", "%.2f to %.2f", armPosMin, armPosMax);
+        telemetry.addData("Lift Target", ltarget);
+        telemetry.addData("Lift Pos (raw)", rawLiftPos);
+        telemetry.addData("Lift Pos Range", "%.2f to %.2f", liftPosMin, liftPosMax);
+        telemetry.addData("Hang3 Pos", hang1Pos);
         telemetry.addLine("ROBOPEDA");
         telemetry.addLine("CIUPA, LUCAS & GEORGE");
         telemetry.addLine("PETUNIX");
