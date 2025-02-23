@@ -60,7 +60,6 @@ public class TESTPidSpecimenSiSample extends OpMode {
     private static final double TICKS_IN_MM = 3.20;
     private static final double HANG_TICKS_IN_MM = 3.434;
     private static final double FUDGE_FACTOR = 250;
-    private static final double TIME_WINDOW = 0.5;    // Multi-press time window (seconds)
     private static final double ARM_TOLERANCE = 50;   // Arm position tolerance (ticks)
 
     // --- Position Presets ---
@@ -91,9 +90,10 @@ public class TESTPidSpecimenSiSample extends OpMode {
     private double oldTime = 0;
 
     // --- Multi-Press Tracking ---
-    private boolean lastYState, lastAState, lastBState, lastDpadRightState;
-    private int yPressCount, aPressCount, bPressCount, dpadRightPressCount;
-    private double lastYTime, lastATime, lastBTime, lastDpadRightTime;
+    private MultiPress yPress = new MultiPress();
+    private MultiPress aPress = new MultiPress();
+    private MultiPress bPress = new MultiPress();
+    private MultiPress dpadRightPress = new MultiPress();
 
     // --- Arm Wait Logic ---
     private boolean waitingForArm = false;
@@ -214,12 +214,12 @@ public class TESTPidSpecimenSiSample extends OpMode {
         }
 
         // Multi-press for gamepad2.y (Specimen sequence)
-        updateMultiPress(gamepad2.y, lastYState, yPressCount, lastYTime, () -> {
-            switch (yPressCount) {
+        yPress.update(gamepad2.y, () -> {
+            switch (yPress.getPressCount()) {
                 case 1: armTarget = ARM_INTAKE_SPECIMEN; break;
                 case 2: armTarget = ARM_RUNG; break;
             }
-        }, () -> lastYState = gamepad2.y);
+        });
 
         // gamepad2.x with arm wait logic
         if (gamepad2.x && armTarget == ARM_RUNG) {
@@ -233,8 +233,8 @@ public class TESTPidSpecimenSiSample extends OpMode {
         }
 
         // Multi-press for gamepad2.a (Claw toggle)
-        updateMultiPress(gamepad2.a, lastAState, aPressCount, lastATime, () -> {
-            switch (aPressCount) {
+        aPress.update(gamepad2.a, () -> {
+            switch (aPress.getPressCount()) {
                 case 1:
                     cleste.setPosition(CLESTE_INCHIS);
                     gamepad1.rumble(1000);
@@ -243,23 +243,23 @@ public class TESTPidSpecimenSiSample extends OpMode {
                     cleste.setPosition(CLESTE_DESCHIS);
                     break;
             }
-        }, () -> lastAState = gamepad2.a);
+        });
 
         // Multi-press for gamepad2.b (Servo rotation)
-        updateMultiPress(gamepad2.b, lastBState, bPressCount, lastBTime, () -> {
-            switch (bPressCount) {
+        bPress.update(gamepad2.b, () -> {
+            switch (bPress.getPressCount()) {
                 case 1: servoRotire.setPosition(SERVO_TRAS); break;
                 case 2: servoRotire.setPosition(SERVO_RETRAS); break;
             }
-        }, () -> lastBState = gamepad2.b);
+        });
 
         // Multi-press for gamepad1.dpad_right (Ascent 2)
-        updateMultiPress(gamepad1.dpad_right, lastDpadRightState, dpadRightPressCount, lastDpadRightTime, () -> {
-            switch (dpadRightPressCount) {
+        dpadRightPress.update(gamepad1.dpad_right, () -> {
+            switch (dpadRightPress.getPressCount()) {
                 case 1: armTarget = ARM_HANG_POS1; break;
                 case 2: if (armPos > 8600) armTarget = ARM_HANG_POS2; break;
             }
-        }, () -> lastDpadRightState = gamepad1.dpad_right);
+        });
 
         // Additional controls
         if (gamepad1.dpad_left && armPos > 8600) armTarget = ARM_CLOSED;
@@ -296,33 +296,28 @@ public class TESTPidSpecimenSiSample extends OpMode {
         telemetry.update();
     }
 
-    // Helper method for multi-press logic
-    private void updateMultiPress(boolean currentState, boolean lastState, int pressCountField,
-                                  double lastTimeField, Runnable action, Runnable updateState) {
-        int pressCount = pressCountField;
-        double lastTime = lastTimeField;
+    // MultiPress helper class
+    private class MultiPress {
+        private boolean lastState;
+        private int pressCount;
+        private double lastTime;
+        private static final double TIME_WINDOW = 0.5; // Multi-press time window (seconds)
 
-        if (currentState && !lastState) {
-            double currentTime = getRuntime();
-            pressCount = (currentTime - lastTime <= TIME_WINDOW) ? pressCount + 1 : 1;
-            lastTime = currentTime;
-        }
-        if (!currentState && lastState && (getRuntime() - lastTime > TIME_WINDOW)) {
-            action.run();
-            pressCount = 0;
+        public void update(boolean currentState, Runnable action) {
+            if (currentState && !lastState) {
+                double currentTime = getRuntime();
+                pressCount = (currentTime - lastTime <= TIME_WINDOW) ? pressCount + 1 : 1;
+                lastTime = currentTime;
+            }
+            if (!currentState && lastState && (getRuntime() - lastTime > TIME_WINDOW)) {
+                action.run();
+                pressCount = 0;
+            }
+            lastState = currentState;
         }
 
-        // Update fields via reflection-like assignment
-        if (currentState != lastState) {
-            updateState.run();
-            if (pressCountField == yPressCount) yPressCount = pressCount;
-            else if (pressCountField == aPressCount) aPressCount = pressCount;
-            else if (pressCountField == bPressCount) bPressCount = pressCount;
-            else if (pressCountField == dpadRightPressCount) dpadRightPressCount = pressCount;
-            if (lastTimeField == lastYTime) lastYTime = lastTime;
-            else if (lastTimeField == lastATime) lastATime = lastTime;
-            else if (lastTimeField == lastBTime) lastBTime = lastTime;
-            else if (lastTimeField == lastDpadRightTime) lastDpadRightTime = lastTime;
+        public int getPressCount() {
+            return pressCount;
         }
     }
 }
