@@ -25,7 +25,7 @@ import org.opencv.core.Mat;
 
 import java.lang.annotation.Target;
 import java.util.List;
-
+@Config
 @TeleOp
 public class PID extends OpMode {
 
