@@ -240,22 +240,90 @@ public class AutoSpecimen extends PedroOpMode {
 
     public SequentialGroup secondRoutine() {
         return new SequentialGroup(
-             new FollowPath(scorePreload),
-                new FollowPath(gotoPickup1),
-                new FollowPath(pushPickup1),
-                new FollowPath(gotoPickup2),
-                new FollowPath(pushPickup2),
-                new FollowPath(gotoPickup3),
-                new FollowPath(pushPickup3),
-                new FollowPath(grabPickup1),
-                new FollowPath(scorePickup1),
-                new FollowPath(grabPickup2),
-                new FollowPath(scorePickup2),
-                new FollowPath(grabPickup3),
-                new FollowPath(scorePickup3),
-                new FollowPath(grabHumanPlayer),
-                new FollowPath(scoreHumanPlayer),
-                new FollowPath(Park)
+
+            Claw.INSTANCE.close(),
+
+            new ParallelGroup(
+                 new FollowPath(scorePreload),
+                 Arm.INSTANCE.toSpecOutTake()
+            ),
+
+            Arm.INSTANCE.toSpecGo(),
+            Claw.INSTANCE.open(),
+
+            new FollowPath(gotoIntermediar),
+            new FollowPath(gotoPickup1),
+            new FollowPath(pushPickup1),
+            new FollowPath(gotoPickup2),
+            new FollowPath(pushPickup2),
+            new FollowPath(gotoPickup3),
+            new FollowPath(pushPickup3),
+
+            new ParallelGroup(
+                    new FollowPath(grabPickup1),
+                    Arm.INSTANCE.toSpecIntake()
+            ),
+
+            Claw.INSTANCE.close(),
+
+            new ParallelGroup(
+                    new FollowPath(scorePickup1),
+                    Arm.INSTANCE.toSpecOutTake()
+            ),
+
+            Arm.INSTANCE.toSpecGo(),
+            Claw.INSTANCE.open(),
+
+            new ParallelGroup(
+                    new FollowPath(grabPickup2),
+                    Arm.INSTANCE.toSpecIntake()
+            ),
+
+            Claw.INSTANCE.close(),
+
+            new ParallelGroup(
+                    new FollowPath(scorePickup2),
+                    Arm.INSTANCE.toSpecOutTake()
+            ),
+
+            Arm.INSTANCE.toSpecGo(),
+            Claw.INSTANCE.open(),
+
+            new ParallelGroup(
+                    new FollowPath(grabPickup3),
+                    Arm.INSTANCE.toSpecIntake()
+            ),
+
+            Claw.INSTANCE.close(),
+
+            new ParallelGroup(
+                    new FollowPath(scorePickup3),
+                    Arm.INSTANCE.toSpecOutTake()
+            ),
+
+            Arm.INSTANCE.toSpecGo(),
+            Claw.INSTANCE.open(),
+
+            new ParallelGroup(
+                    new FollowPath(grabHumanPlayer),
+                    Arm.INSTANCE.toSpecIntake()
+            ),
+
+            Claw.INSTANCE.close(),
+
+            new ParallelGroup(
+                    new FollowPath(scoreHumanPlayer),
+                    Arm.INSTANCE.toSpecOutTake()
+            ),
+
+            Arm.INSTANCE.toSpecGo(),
+            Claw.INSTANCE.open(),
+
+            new ParallelGroup(
+                new FollowPath(Park),
+                Arm.INSTANCE.toIntake(),
+                Lift.INSTANCE.closed()
+            )
         );
     }
 

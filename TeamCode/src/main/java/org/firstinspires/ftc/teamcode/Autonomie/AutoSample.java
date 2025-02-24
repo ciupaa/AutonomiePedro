@@ -119,9 +119,10 @@ public class AutoSample extends PedroOpMode {
         Park = follower.pathBuilder()
                 .addPath(
                         // Line 8
-                        new BezierLine(
+                        new BezierCurve(
                                 new Point(15.252, 128.523, Point.CARTESIAN),
-                                new Point(61.458, 108.336, Point.CARTESIAN)
+                                new Point(55.785, 121.484, Point.CARTESIAN),
+                                new Point(65.363, 95.608, Point.CARTESIAN)
                         )
                 )
                 .setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(90))
