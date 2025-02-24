@@ -12,6 +12,7 @@ import com.pedropathing.util.Constants;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.rowanmcalpin.nextftc.core.command.Command;
 import com.rowanmcalpin.nextftc.core.command.groups.ParallelGroup;
@@ -28,7 +29,8 @@ import org.firstinspires.ftc.teamcode.SubSystems.ServoRotire;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 
-@Config
+import kotlin.Suppress;
+
 @Autonomous(name = "AutoSample")
 
 DcMotorEx fata_stanga;
@@ -39,10 +41,6 @@ DcMotorEx motor_glisiere;
 
 public class AutoSampleCameraTest extends PedroOpMode {
     private Limelight3A limelight;
-
-    public AutoSampleCameraTest() {
-        super(Claw.INSTANCE, Lift.INSTANCE, ServoRotire.INSTANCE, Arm.INSTANCE);
-    }
 
     private PathChain scorePreload, grabPickup1, scorePickup1, grabPickup2, scorePickup2, grabPickup3, scorePickup3, Park, Mijloc, toScore;
 

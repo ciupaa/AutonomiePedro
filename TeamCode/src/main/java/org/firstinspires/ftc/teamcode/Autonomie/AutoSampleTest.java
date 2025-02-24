@@ -142,7 +142,7 @@ public class AutoSampleTest extends PedroOpMode {
                         new FollowPath(grabPickup1),
                         ServoRotire.INSTANCE.intake(),
                         Arm.INSTANCE.toIntake(),
-                        Lift.INSTANCE.toLow()
+                        Lift.INSTANCE.closed()
                 ),
 
                 Claw.INSTANCE.close(),
@@ -160,7 +160,7 @@ public class AutoSampleTest extends PedroOpMode {
                         new FollowPath(grabPickup2),
                         ServoRotire.INSTANCE.intake(),
                         Arm.INSTANCE.toIntake(),
-                        Lift.INSTANCE.toLow()
+                        Lift.INSTANCE.closed()
                 ),
 
                 Claw.INSTANCE.close(),
@@ -178,7 +178,7 @@ public class AutoSampleTest extends PedroOpMode {
                         new FollowPath(grabPickup3),
                         ServoRotire.INSTANCE.intake(),
                         Arm.INSTANCE.toIntake(),
-                        Lift.INSTANCE.toLow()
+                        Lift.INSTANCE.closed()
                 ),
 
                 Claw.INSTANCE.close(),
@@ -195,7 +195,7 @@ public class AutoSampleTest extends PedroOpMode {
                 new ParallelGroup(
                         new FollowPath(Park),
                         Arm.INSTANCE.toLow(),
-                        Lift.INSTANCE.toLow(),
+                        Lift.INSTANCE.closed(),
                         ServoRotire.INSTANCE.intake()
                 )
         );

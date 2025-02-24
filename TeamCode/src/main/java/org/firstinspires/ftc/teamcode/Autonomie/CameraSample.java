@@ -10,17 +10,15 @@ import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Constants;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.rowanmcalpin.nextftc.core.command.groups.ParallelGroup;
 import com.rowanmcalpin.nextftc.core.command.groups.SequentialGroup;
-import com.rowanmcalpin.nextftc.core.command.utility.delays.Delay;
 import com.rowanmcalpin.nextftc.pedro.FollowPath;
 import com.rowanmcalpin.nextftc.pedro.PedroOpMode;
-import org.firstinspires.ftc.teamcode.SubSystems.ServoRotire;
-import org.firstinspires.ftc.teamcode.SubSystems.Claw;
+
 import org.firstinspires.ftc.teamcode.SubSystems.Arm;
+import org.firstinspires.ftc.teamcode.SubSystems.Claw;
 import org.firstinspires.ftc.teamcode.SubSystems.Lift;
+import org.firstinspires.ftc.teamcode.SubSystems.ServoRotire;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 
@@ -28,9 +26,10 @@ import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 @Config
 @Autonomous(name = "AutoSample")
 
+//public DcMotorEx fata_stanga;
 
-public class AutoSample extends PedroOpMode {
-    public AutoSample() {
+public class CameraSample extends PedroOpMode {
+    public CameraSample() {
         super(Claw.INSTANCE, Lift.INSTANCE, ServoRotire.INSTANCE, Arm.INSTANCE);
     }
 

@@ -59,6 +59,23 @@ public class Arm extends Subsystem {
                 this            // IMPLEMENTED SUBSYSTEM
         );
     }
+    public Command toSpecOutTake() {
+        return new RunToPosition(
+                motor_stanga,    // MOTOR TO MOVE
+                5950,            // TARGET POSITION, IN TICKS
+                controller,      // CONTROLLER TO IMPLEMENT
+                this            // IMPLEMENTED SUBSYSTEM
+        );
+    }
+    public Command toSpecGo() {
+        return new RunToPosition(
+                motor_stanga,    // MOTOR TO MOVE
+                5950,            // TARGET POSITION, IN TICKS
+                controller,      // CONTROLLER TO IMPLEMENT
+                this            // IMPLEMENTED SUBSYSTEM
+        );
+    }
+
 
     @Override
     public void initialize() {
