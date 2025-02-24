@@ -31,7 +31,7 @@ public class Lift extends Subsystem {
     );
     public String name = "motor_glisiere";
 
-    public Command toLow() {
+    public Command closed() {
         return new RunToPosition(
                 motor_glisiere,    // MOTOR TO MOVE
                 10,                // TARGET POSITION, IN TICKS
@@ -40,7 +40,7 @@ public class Lift extends Subsystem {
         );
     }
 
-    public Command toMiddle() {
+    public Command toIntakeSpecimen() {
         return new RunToPosition(
                 motor_glisiere,    // MOTOR TO MOVE
                 500,               // TARGET POSITION, IN TICKS
@@ -67,5 +67,6 @@ public class Lift extends Subsystem {
     @Override
     public Command getDefaultCommand() {
         return new HoldPosition(motor_glisiere, lcontroller, this);
+
     }
 }

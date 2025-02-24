@@ -16,7 +16,6 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import java.util.List;
@@ -76,9 +75,9 @@ public class Test2 extends OpMode {
     double armHangPos2 = 8701;
     double armHang3Down = 10;
     double armHang3Up = 100;
-    private static final double ARM_INTAKE_SPECIMEN = 2000;
+    private static final double ARM_INTAKE_SPECIMEN = 1600;
     private static final double ARM_RUNG = 2100;
-    private static final double ARM_OUTTAKE_RUNG = 2000;
+    private static final double ARM_OUTTAKE_RUNG = 1800;
     double liftClosed = 10;
     double liftMax = 1000;
     double liftCosSus = 1600;
@@ -109,12 +108,20 @@ public class Test2 extends OpMode {
     double oldtime = 0;
 
     private static final double LIFT_MIN = 10;          // Starting lift position
-    private static final double LIFT_MAX_EXT = 1570;    // Max lift position
-    private static final double ARM_MIN = 100;          // Starting arm position
-    private static final double ARM_MIN_FOR_MAX_LIFT = 1100; // Min arm pos at max lift
+    private static final double LIFT_MAX_EXT = 1570;    // Max lift position (used for reference, not enforced)
+    private static final double ARM_MIN = 200;          // Starting arm position
+    private static final double ARM_MIN_FOR_MAX_LIFT = 1100; // Max arm pos for intake mode adjustment
 
     // Intake mode tracking
     private boolean isIntakeMode = false;
+
+    // Toggle Button Readers
+    private ToggleButtonReader aToggle;
+    private ToggleButtonReader bToggle;
+    private ToggleButtonReader yToggle;
+    private ToggleButtonReader xToggle;
+    private ToggleButtonReader rightToggle;
+    private ToggleButtonReader leftToggle;
 
     @Override
     public void init() {
@@ -162,6 +169,16 @@ public class Test2 extends OpMode {
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
+
+        // Initialize GamepadEx and ToggleButtonReaders
+        GamepadEx driverOp = new GamepadEx(gamepad1);
+        GamepadEx toolOp = new GamepadEx(gamepad2);
+        aToggle = new ToggleButtonReader(toolOp, GamepadKeys.Button.A);
+        bToggle = new ToggleButtonReader(toolOp, GamepadKeys.Button.B);
+        yToggle = new ToggleButtonReader(toolOp, GamepadKeys.Button.Y);
+        xToggle = new ToggleButtonReader(toolOp, GamepadKeys.Button.X);
+        rightToggle = new ToggleButtonReader(driverOp, GamepadKeys.Button.DPAD_RIGHT);
+        leftToggle = new ToggleButtonReader(toolOp, GamepadKeys.Button.DPAD_LEFT);
     }
 
     @Override
@@ -169,6 +186,14 @@ public class Test2 extends OpMode {
         // Gamepad initialization
         GamepadEx driverOp = new GamepadEx(gamepad1);
         GamepadEx toolOp = new GamepadEx(gamepad2);
+
+        // Update toggle states
+        aToggle.readValue();
+        bToggle.readValue();
+        yToggle.readValue();
+        xToggle.readValue();
+        rightToggle.readValue();
+        leftToggle.readValue();
 
         // Update PID parameters
         controller.setPID(p, i, d);
@@ -215,13 +240,12 @@ public class Test2 extends OpMode {
         double frontRightPower = (y - x - rx) / denominator;
         double backRightPower = (y + x - rx) / denominator;
 
-        // Automatic arm adjustment when in intake mode
-        if (isIntakeMode && liftPos > LIFT_MIN) {
-            double liftRange = LIFT_MAX_EXT - LIFT_MIN;
-            double armRange = ARM_MIN_FOR_MAX_LIFT - ARM_MIN;
-            double liftProgress = (liftPos - LIFT_MIN) / liftRange;
-            double newArmTarget = ARM_MIN + (liftProgress * armRange);
-            target = Math.max(ARM_MIN, Math.min(armMax, newArmTarget));
+        // Automatic arm adjustment when in intake mode (stops at ARM_MIN_FOR_MAX_LIFT = 1100)
+        if (isIntakeMode && liftPos > LIFT_MIN && target < ARM_MIN_FOR_MAX_LIFT) {
+            double liftChange = liftPos - LIFT_MIN;              // How far lift has moved from LIFT_MIN
+            double armChange = liftChange * 1.5;                 // 1.5 arm ticks per lift tick (adjusted from 5)
+            double newArmTarget = ARM_MIN + armChange;           // Starting from ARM_MIN
+            target = Math.max(ARM_MIN, Math.min(ARM_MIN_FOR_MAX_LIFT, newArmTarget)); // Clamp to 1100
         }
 
         // Set motor powers
@@ -247,11 +271,15 @@ public class Test2 extends OpMode {
             ltarget -= 20;
         }
 
-        // Arm and lift presets
-        if (gamepad2.dpad_left) {
-            target = ARM_MIN;    // Initial arm position
-            ltarget = LIFT_MIN;  // Initial lift position
-            isIntakeMode = true; // Enable intake mode
+        // Arm and lift presets with toggle for dpad_left
+        if (leftToggle.wasJustPressed()) {
+            if (!isIntakeMode) {
+                target = ARM_MIN;    // Initial arm position
+                ltarget = LIFT_MIN;  // Initial lift position
+                isIntakeMode = true; // Enable intake mode
+            } else {
+                isIntakeMode = false; // Disable intake mode on second press
+            }
         }
         if (gamepad2.dpad_right) {
             target = armClosed;
@@ -270,16 +298,18 @@ public class Test2 extends OpMode {
             ltarget = liftClosed;
             isIntakeMode = false;
         }
-        if (gamepad1.dpad_right && cnt_right % 2 == 0) {
-            target = armHangPos1;
+        if (rightToggle.wasJustPressed()) {
+            if (cnt_right % 2 == 0) {
+                target = armHangPos1;
+            } else {
+                target = armHangPos2;
+            }
             cnt_right++;
-        }
-        if (gamepad1.dpad_right && cnt_right % 2 == 1) {
-            target = armHangPos2;
-            cnt_right++;
+            isIntakeMode = false; // Ensure intake mode is off
         }
         if (gamepad1.dpad_left && armPos > 8600) {
             target = armClosed;
+            isIntakeMode = false;
         }
         if (gamepad1.dpad_up) {
             h3target = armHang3Up;
@@ -288,10 +318,7 @@ public class Test2 extends OpMode {
             h3target = armHang3Down;
         }
 
-        // Enforce limits
-        if (liftPos > liftCosSus) {
-            ltarget = ltarget - abs(liftCosSus - ltarget);
-        }
+        // Enforce limits (removed lift upper limit)
         if (liftPos < LIFT_MIN) {
             ltarget = ltarget + abs(LIFT_MIN - ltarget);
         }
@@ -300,35 +327,37 @@ public class Test2 extends OpMode {
             armPositionFudgeFactor = 0;
         }
 
-        // Servo controls
-        if (gamepad2.a && cnt_a % 2 == 0) {
-            cleste.setPosition(clesteDeschis);
+        // Servo controls with toggle readers
+        if (aToggle.wasJustPressed()) {
+            if (cnt_a % 2 == 0) {
+                cleste.setPosition(clesteDeschis);
+            } else {
+                cleste.setPosition(clesteInchis);
+                gamepad1.rumble(1000);
+            }
             cnt_a++;
         }
-        if (gamepad2.a && cnt_a % 2 == 1) {
-            cleste.setPosition(clesteInchis);
-            gamepad1.rumble(1000);
-            cnt_a++;
-        }
-        if (gamepad2.b && cnt_b % 2 == 0) {
-            servoRotire.setPosition(servoTras);
+        if (bToggle.wasJustPressed()) {
+            if (cnt_b % 2 == 0) {
+                servoRotire.setPosition(servoTras);
+            } else {
+                servoRotire.setPosition(servoRetras);
+            }
             cnt_b++;
         }
-        if (gamepad2.b && cnt_b % 2 == 1) {
-            servoRotire.setPosition(servoRetras);
-            cnt_b++;
-        }
-        if (gamepad2.y && cnt_y % 2 == 0) {
+        if (yToggle.wasJustPressed()) {
             target = ARM_INTAKE_SPECIMEN;
             cnt_y++;
+            isIntakeMode = false; // Ensure intake mode is off
         }
-        if (gamepad2.x && cnt_x % 2 == 1) {
+        if (xToggle.wasJustPressed()) {
+            if (cnt_x % 2 == 0) {
+                target = ARM_OUTTAKE_RUNG;
+            } else {
+                target = ARM_RUNG;
+            }
             cnt_x++;
-            target = ARM_RUNG;
-        }
-        if (gamepad2.x && cnt_x % 2 == 0) {
-            cnt_x++;
-            target = ARM_OUTTAKE_RUNG;
+            isIntakeMode = false; // Ensure intake mode is off
         }
         if (looptime > 75) {
             gamepad1.rumble(2000);
@@ -341,6 +370,9 @@ public class Test2 extends OpMode {
         oldtime = looptime;
 
         // Telemetry with encoder error ranges
+        telemetry.addData("isIntakeMode", isIntakeMode);
+        telemetry.addData("Arm Power", power);
+
         telemetry.addLine("PETUNIX");
         telemetry.addData("Arm Target", target);
         telemetry.addData("Arm Pos (raw)", rawArmPos);

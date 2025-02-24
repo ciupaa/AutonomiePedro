@@ -25,7 +25,7 @@ public class Arm extends Subsystem {
     );
     public String name = "motor_stanga";
 
-    public Command toLow() {
+    public Command closed() {
         return new RunToPosition(
                 motor_stanga,    // MOTOR TO MOVE
                 10,              // TARGET POSITION, IN TICKS
@@ -44,6 +44,14 @@ public class Arm extends Subsystem {
     }
 
     public Command toHigh() {
+        return new RunToPosition(
+                motor_stanga,    // MOTOR TO MOVE
+                5950,            // TARGET POSITION, IN TICKS
+                controller,      // CONTROLLER TO IMPLEMENT
+                this            // IMPLEMENTED SUBSYSTEM
+        );
+    }
+    public Command toSpecIntake() {
         return new RunToPosition(
                 motor_stanga,    // MOTOR TO MOVE
                 5950,            // TARGET POSITION, IN TICKS
