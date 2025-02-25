@@ -194,7 +194,7 @@ public class AutoSampleTest extends PedroOpMode {
 
                 new ParallelGroup(
                         new FollowPath(Park),
-                        Arm.INSTANCE.toLow(),
+                        Arm.INSTANCE.closed(),
                         Lift.INSTANCE.closed(),
                         ServoRotire.INSTANCE.intake()
                 )

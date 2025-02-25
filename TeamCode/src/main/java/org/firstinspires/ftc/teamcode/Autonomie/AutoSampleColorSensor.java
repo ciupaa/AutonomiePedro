@@ -240,7 +240,7 @@ public class AutoSampleColorSensor extends PedroOpMode {
 
     public SequentialGroup SensorRoutine() {
         return new SequentialGroup(
-                Lift.INSTANCE.toIntakeSpecimen(),
+                Lift.INSTANCE.closed(),
 
                 new FollowPath(StrafeRight),
                 new FollowPath(StrafeLeft)

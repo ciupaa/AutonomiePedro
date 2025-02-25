@@ -36,23 +36,22 @@ public class Test2 extends OpMode {
     private Servo servoRotire;
     private Servo cleste;
     private CRServo hang31;
-    private CRServo hang32;
 
     // PID Controllers
     private PIDController controller;
     private PIDController lcontroller;
     private PIDController hang1pid;
-    private PIDController hang2pid;
+  //  private PIDController hang2pid;
 
     // PID Tuning Parameters
     public static double p = 0.0055, i = 0, d = 0.0002;
     public static double f = 0.0011;
     public static double lp = 0.01, li = 0, ld = 0.0002;
     public static double lf = 0.14;
-    public static double h1p = 0, h1i = 0, h1d = 0;
+    public static double h1p = 0.012, h1i = 0, h1d = 0;
     public static double h1f = 0;
-    public static double h2p = 0, h2i = 0, h2d = 0;
-    public static double h2f = 0;
+  //  public static double h2p = 0, h2i = 0, h2d = 0;
+    //public static double h2f = 0;
 
     // Target Positions
     public static double target = 100;
@@ -73,8 +72,8 @@ public class Test2 extends OpMode {
     double armIntake = 1400;
     double armHangPos1 = 7140;
     double armHangPos2 = 8701;
-    double armHang3Down = 10;
-    double armHang3Up = 100;
+    double armHang3Down = 0;
+    double armHang3Up = 3900;
     private static final double ARM_INTAKE_SPECIMEN = 1600;
     private static final double ARM_RUNG = 2100;
     private static final double ARM_OUTTAKE_RUNG = 1800;
@@ -129,7 +128,7 @@ public class Test2 extends OpMode {
         controller = new PIDController(p, i, d);
         lcontroller = new PIDController(lp, li, ld);
         hang1pid = new PIDController(h1p, h1i, h1d);
-        hang2pid = new PIDController(h2p, h2i, h2d);
+//        hang2pid = new PIDController(h2p, h2i, h2d);
 
         // Set up telemetry
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -146,7 +145,6 @@ public class Test2 extends OpMode {
         cleste = hardwareMap.get(Servo.class, "cleste");
         servoRotire = hardwareMap.get(Servo.class, "servoRotire");
         hang31 = hardwareMap.get(CRServo.class, "hang31");
-        hang32 = hardwareMap.get(CRServo.class, "hang32");
 
         // Configure motor directions
         motor_stanga.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -160,6 +158,8 @@ public class Test2 extends OpMode {
         fata_stanga.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         spate_dreapta.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         spate_stanga.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        hang1.setDirection(DcMotorSimple.Direction.REVERSE);
+
 
         // Initialize fudge factor
         armPositionFudgeFactor = 0;
@@ -199,7 +199,7 @@ public class Test2 extends OpMode {
         controller.setPID(p, i, d);
         lcontroller.setPID(lp, li, ld);
         hang1pid.setPID(h1p, h1i, h1d);
-        hang2pid.setPID(h2p, h2i, h2d);
+        //hang2pid.setPID(h2p, h2i, h2d);
 
         // Get current positions with simulated encoder error bounds
         int rawArmPos = motor_stanga.getCurrentPosition();
@@ -258,7 +258,6 @@ public class Test2 extends OpMode {
 
         // Hang servos control
         hang31.setPower(gamepad1.right_trigger + (-gamepad1.left_trigger));
-        hang32.setPower(gamepad1.right_trigger + (-gamepad1.left_trigger));
 
         // Update fudge factor
         armPositionFudgeFactor = FUDGE_FACTOR * (gamepad2.right_trigger + (-gamepad2.left_trigger));
@@ -307,7 +306,7 @@ public class Test2 extends OpMode {
             cnt_right++;
             isIntakeMode = false; // Ensure intake mode is off
         }
-        if (gamepad1.dpad_left && armPos > 8600) {
+        if (gamepad1.dpad_left) {
             target = armClosed;
             isIntakeMode = false;
         }
@@ -381,6 +380,7 @@ public class Test2 extends OpMode {
         telemetry.addData("Lift Pos (raw)", rawLiftPos);
         telemetry.addData("Lift Pos Range", "%.2f to %.2f", liftPosMin, liftPosMax);
         telemetry.addData("Hang3 Pos", hang1Pos);
+        telemetry.addData("hang 3 2 pos", hang2Pos);
         telemetry.addLine("ROBOPEDA");
         telemetry.addLine("CIUPA, LUCAS & GEORGE");
         telemetry.addLine("PETUNIX");
