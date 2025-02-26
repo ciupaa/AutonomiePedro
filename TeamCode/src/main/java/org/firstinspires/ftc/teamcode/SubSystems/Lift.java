@@ -34,7 +34,7 @@ public class Lift extends Subsystem {
     public Command closed() {
         return new RunToPosition(
                 motor_glisiere,    // MOTOR TO MOVE
-                10,                // TARGET POSITION, IN TICKS
+                50,                // TARGET POSITION, IN TICKS
                 lcontroller,       // CONTROLLER TO IMPLEMENT
                 this              // IMPLEMENTED SUBSYSTEM
         );

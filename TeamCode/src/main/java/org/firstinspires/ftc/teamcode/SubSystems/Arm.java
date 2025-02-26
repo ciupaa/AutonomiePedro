@@ -37,7 +37,7 @@ public class Arm extends Subsystem {
     public Command toIntake() {
         return new RunToPosition(
                 motor_stanga,    // MOTOR TO MOVE
-                1400,            // TARGET POSITION, IN TICKS
+                666,            // TARGET POSITION, IN TICKS
                 controller,      // CONTROLLER TO IMPLEMENT
                 this            // IMPLEMENTED SUBSYSTEM
         );

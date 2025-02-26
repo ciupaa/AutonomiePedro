@@ -23,7 +23,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 
 
 @Config
-@Autonomous(name = "AutoSample")
+@Autonomous(name = "AutoSampleTest")
 
 
 public class AutoSampleTest extends PedroOpMode {

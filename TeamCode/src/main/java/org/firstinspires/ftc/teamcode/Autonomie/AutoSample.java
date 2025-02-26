@@ -27,8 +27,6 @@ import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 
 @Config
 @Autonomous(name = "AutoSample")
-
-
 public class AutoSample extends PedroOpMode {
     public AutoSample() {
         super(Claw.INSTANCE, Lift.INSTANCE, ServoRotire.INSTANCE, Arm.INSTANCE);

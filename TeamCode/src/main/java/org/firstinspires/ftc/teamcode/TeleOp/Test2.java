@@ -31,31 +31,23 @@ public class Test2 extends OpMode {
     private DcMotorEx fata_dreapta;
     private DcMotorEx spate_stanga;
     private DcMotorEx spate_dreapta;
-    private DcMotorEx hang1 = null;
-    private DcMotorEx hang2 = null;
     private Servo servoRotire;
     private Servo cleste;
-    private CRServo hang31;
 
     // PID Controllers
     private PIDController controller;
     private PIDController lcontroller;
-    private PIDController hang1pid;
   //  private PIDController hang2pid;
 
     // PID Tuning Parameters
     public static double p = 0.0055, i = 0, d = 0.0002;
     public static double f = 0.0011;
-    public static double lp = 0.01, li = 0, ld = 0.0002;
+    public static double lp = 0.02, li = 0, ld = 0.0002;
     public static double lf = 0.14;
-    public static double h1p = 0.012, h1i = 0, h1d = 0;
-    public static double h1f = 0;
-  //  public static double h2p = 0, h2i = 0, h2d = 0;
-    //public static double h2f = 0;
 
     // Target Positions
     public static double target = 100;
-    public static double ltarget = 20;
+    public static double ltarget = 50;
     public static double h3target = 0;
 
     // Conversion Constants
@@ -82,10 +74,10 @@ public class Test2 extends OpMode {
     double liftCosSus = 1600;
     double liftCosJos = 500;
 
-    double clesteDeschis = 0.6;
+    double clesteDeschis = 0;
     double clesteInchis = 1;
-    double servoTras = 0.4;
-    double servoRetras = 0.6;
+    double servoTras = 0.6;
+    double servoRetras = 0.8;
 
     // Fudge Factor
     final double FUDGE_FACTOR = 1000;
@@ -106,9 +98,9 @@ public class Test2 extends OpMode {
     double looptime = 0;
     double oldtime = 0;
 
-    private static final double LIFT_MIN = 10;          // Starting lift position
+    private static final double LIFT_MIN = 50;          // Starting lift position
     private static final double LIFT_MAX_EXT = 1570;    // Max lift position (used for reference, not enforced)
-    private static final double ARM_MIN = 200;          // Starting arm position
+    private static final double ARM_MIN = 666;          // Starting arm position
     private static final double ARM_MIN_FOR_MAX_LIFT = 1100; // Max arm pos for intake mode adjustment
 
     // Intake mode tracking
@@ -127,8 +119,7 @@ public class Test2 extends OpMode {
         // Initialize PID Controllers
         controller = new PIDController(p, i, d);
         lcontroller = new PIDController(lp, li, ld);
-        hang1pid = new PIDController(h1p, h1i, h1d);
-//        hang2pid = new PIDController(h2p, h2i, h2d);
+
 
         // Set up telemetry
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -140,25 +131,20 @@ public class Test2 extends OpMode {
         fata_dreapta = hardwareMap.get(DcMotorEx.class, "fata_dreapta");
         spate_stanga = hardwareMap.get(DcMotorEx.class, "spate_stanga");
         spate_dreapta = hardwareMap.get(DcMotorEx.class, "spate_dreapta");
-        hang1 = hardwareMap.get(DcMotorEx.class, "hang1");
-        hang2 = hardwareMap.get(DcMotorEx.class, "hang2");
         cleste = hardwareMap.get(Servo.class, "cleste");
         servoRotire = hardwareMap.get(Servo.class, "servoRotire");
-        hang31 = hardwareMap.get(CRServo.class, "hang31");
 
         // Configure motor directions
         motor_stanga.setDirection(DcMotorSimple.Direction.FORWARD);
         motor_glisiere.setDirection(DcMotorSimple.Direction.REVERSE);
         fata_stanga.setDirection(DcMotorSimple.Direction.REVERSE);
         spate_stanga.setDirection(DcMotorSimple.Direction.REVERSE);
-        hang2.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // Set brake behavior
         fata_dreapta.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         fata_stanga.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         spate_dreapta.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         spate_stanga.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        hang1.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
         // Initialize fudge factor
@@ -198,14 +184,11 @@ public class Test2 extends OpMode {
         // Update PID parameters
         controller.setPID(p, i, d);
         lcontroller.setPID(lp, li, ld);
-        hang1pid.setPID(h1p, h1i, h1d);
-        //hang2pid.setPID(h2p, h2i, h2d);
 
         // Get current positions with simulated encoder error bounds
         int rawArmPos = motor_stanga.getCurrentPosition();
         int rawLiftPos = motor_glisiere.getCurrentPosition();
-        int hang1Pos = hang1.getCurrentPosition();
-        int hang2Pos = hang2.getCurrentPosition();
+
 
         // Define position ranges due to encoder errors (for telemetry and awareness)
         double armPosMin = rawArmPos - ARM_ENCODER_ERROR;
@@ -223,18 +206,12 @@ public class Test2 extends OpMode {
         double power = pid + ff;
         double lpower = lpid + lff;
 
-        // Hang motors sync
-        double leaderPID = hang1pid.calculate(hang1Pos, h3target);
-        double leaderFF = h1f;
-        double leaderPower = leaderPID + leaderFF;
-        hang1.setPower(leaderPower);
-        hang2.setPower(leaderPower);
 
         // Drivetrain control
         double y = -gamepad1.left_stick_y;
         double x = gamepad1.left_stick_x;
         double rx = gamepad1.right_stick_x;
-        double denominator = Math.max(abs(y) + abs(x) + abs(rx), 1);
+        double denominator = Math.max(abs(y) + abs(x) + abs(rx), 1.1);
         double frontLeftPower = (y + x + rx) / denominator;
         double backLeftPower = (y - x + rx) / denominator;
         double frontRightPower = (y - x - rx) / denominator;
@@ -243,7 +220,7 @@ public class Test2 extends OpMode {
         // Automatic arm adjustment when in intake mode (stops at ARM_MIN_FOR_MAX_LIFT = 1100)
         if (isIntakeMode && liftPos > LIFT_MIN && target < ARM_MIN_FOR_MAX_LIFT) {
             double liftChange = liftPos - LIFT_MIN;              // How far lift has moved from LIFT_MIN
-            double armChange = liftChange * 1.5;                 // 1.5 arm ticks per lift tick (adjusted from 5)
+            double armChange = liftChange * 1;                 // 1.5 arm ticks per lift tick (adjusted from 5)
             double newArmTarget = ARM_MIN + armChange;           // Starting from ARM_MIN
             target = Math.max(ARM_MIN, Math.min(ARM_MIN_FOR_MAX_LIFT, newArmTarget)); // Clamp to 1100
         }
@@ -256,18 +233,15 @@ public class Test2 extends OpMode {
         motor_glisiere.setPower(lpower);
         motor_stanga.setPower(power);
 
-        // Hang servos control
-        hang31.setPower(gamepad1.right_trigger + (-gamepad1.left_trigger));
-
         // Update fudge factor
         armPositionFudgeFactor = FUDGE_FACTOR * (gamepad2.right_trigger + (-gamepad2.left_trigger));
 
         // Lift manual control
         if (gamepad2.right_bumper) {
-            ltarget += 20;
+            ltarget += 15;
         }
         if (gamepad2.left_bumper) {
-            ltarget -= 20;
+            ltarget -= 15;
         }
 
         // Arm and lift presets with toggle for dpad_left
@@ -275,7 +249,7 @@ public class Test2 extends OpMode {
             if (!isIntakeMode) {
                 target = ARM_MIN;    // Initial arm position
                 ltarget = LIFT_MIN;  // Initial lift position
-                isIntakeMode = true; // Enable intake mode
+                isIntakeMode = false; // Enable intake mode
             } else {
                 isIntakeMode = false; // Disable intake mode on second press
             }
@@ -323,13 +297,13 @@ public class Test2 extends OpMode {
         }
         if (armPos < 0) {
             target = 0;
-            armPositionFudgeFactor = 0;
         }
 
         // Servo controls with toggle readers
         if (aToggle.wasJustPressed()) {
             if (cnt_a % 2 == 0) {
                 cleste.setPosition(clesteDeschis);
+
             } else {
                 cleste.setPosition(clesteInchis);
                 gamepad1.rumble(1000);
@@ -370,17 +344,12 @@ public class Test2 extends OpMode {
 
         // Telemetry with encoder error ranges
         telemetry.addData("isIntakeMode", isIntakeMode);
-        telemetry.addData("Arm Power", power);
 
         telemetry.addLine("PETUNIX");
         telemetry.addData("Arm Target", target);
-        telemetry.addData("Arm Pos (raw)", rawArmPos);
-        telemetry.addData("Arm Pos Range", "%.2f to %.2f", armPosMin, armPosMax);
+        telemetry.addData("Arm Pos", rawArmPos);
         telemetry.addData("Lift Target", ltarget);
-        telemetry.addData("Lift Pos (raw)", rawLiftPos);
-        telemetry.addData("Lift Pos Range", "%.2f to %.2f", liftPosMin, liftPosMax);
-        telemetry.addData("Hang3 Pos", hang1Pos);
-        telemetry.addData("hang 3 2 pos", hang2Pos);
+        telemetry.addData("Lift Pos", rawLiftPos);
         telemetry.addLine("ROBOPEDA");
         telemetry.addLine("CIUPA, LUCAS & GEORGE");
         telemetry.addLine("PETUNIX");
