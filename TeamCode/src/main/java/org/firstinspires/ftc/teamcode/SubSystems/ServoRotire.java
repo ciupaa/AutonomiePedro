@@ -18,13 +18,13 @@ public class ServoRotire extends Subsystem {
 
     public Command intake() {
         return new ServoToPosition(servoRotire, // SERVO TO MOVE
-                0.4, // POSITION TO MOVE TO
+                0.9, // POSITION TO MOVE TO
                 this); // IMPLEMENTED SUBSYSTEM
     }
 
     public Command outtake() {
         return new ServoToPosition(servoRotire, // SERVO TO MOVE
-                0.6, // POSITION TO MOVE TO
+                0.7, // POSITION TO MOVE TO
                 this); // IMPLEMENTED SUBSYSTEM
     }
 

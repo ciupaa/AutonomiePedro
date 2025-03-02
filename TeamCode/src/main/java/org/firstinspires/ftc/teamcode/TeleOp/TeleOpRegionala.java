@@ -12,7 +12,6 @@ import com.arcrobotics.ftclib.gamepad.ToggleButtonReader;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -22,10 +21,10 @@ import java.util.List;
 
 @Config
 @TeleOp
-public class Test2 extends OpMode {
+public class TeleOpRegionala extends OpMode {
 
     // Hardware Declarations
-    private DcMotorEx motor_stanga; // the arm motor
+    private DcMotorEx motor_stanga;
     private DcMotorEx motor_glisiere;
     private DcMotorEx fata_stanga;
     private DcMotorEx fata_dreapta;
@@ -37,7 +36,6 @@ public class Test2 extends OpMode {
     // PID Controllers
     private PIDController controller;
     private PIDController lcontroller;
-  //  private PIDController hang2pid;
 
     // PID Tuning Parameters
     public static double p = 0.0055, i = 0, d = 0.0002;
@@ -59,7 +57,7 @@ public class Test2 extends OpMode {
     // Position Presets
     double armClosed = 10;
     double armMax = 8800;
-    double armCosSus = 5950;
+    double armCosSus = 5915;
     double armCosJos = 5950;
     double armIntake = 1400;
     double armHangPos1 = 7140;
@@ -74,18 +72,18 @@ public class Test2 extends OpMode {
     double liftCosSus = 1600;
     double liftCosJos = 500;
 
-    double clesteDeschis = 0;
-    double clesteInchis = 1;
-    double servoTras = 0.6;
-    double servoRetras = 0.8;
+    double clesteDeschis = 0.3;
+    double clesteInchis = 0;
+    double servoTras = 0.7;
+    double servoRetras = 0.9;
 
     // Fudge Factor
     final double FUDGE_FACTOR = 1000;
     double armPositionFudgeFactor;
 
     // Encoder Error Constants
-    private final double ARM_ENCODER_ERROR = 100; // ±100 ticks for arm
-    private final double LIFT_ENCODER_ERROR = 10; // ±10 ticks for lift
+    private final double ARM_ENCODER_ERROR = 100;
+    private final double LIFT_ENCODER_ERROR = 10;
 
     private int cnt_a = 0;
     private int cnt_b = 0;
@@ -97,14 +95,12 @@ public class Test2 extends OpMode {
     double cycletime = 0;
     double looptime = 0;
     double oldtime = 0;
+    private boolean shouldVibrate = true;  // New flag to control vibration
 
-    private static final double LIFT_MIN = 50;          // Starting lift position
-    private static final double LIFT_MAX_EXT = 1570;    // Max lift position (used for reference, not enforced)
-    private static final double ARM_MIN = 666;          // Starting arm position
-    private static final double ARM_MIN_FOR_MAX_LIFT = 1100; // Max arm pos for intake mode adjustment
-
-    // Intake mode tracking
-    private boolean isIntakeMode = false;
+    private static final double LIFT_MIN = 50;
+    private static final double LIFT_MAX_EXT = 1570;
+    private static final double ARM_MIN = 666;
+    private static final double ARM_MIN_FOR_MAX_LIFT = 1100;
 
     // Toggle Button Readers
     private ToggleButtonReader aToggle;
@@ -112,14 +108,12 @@ public class Test2 extends OpMode {
     private ToggleButtonReader yToggle;
     private ToggleButtonReader xToggle;
     private ToggleButtonReader rightToggle;
-    private ToggleButtonReader leftToggle;
 
     @Override
     public void init() {
         // Initialize PID Controllers
         controller = new PIDController(p, i, d);
         lcontroller = new PIDController(lp, li, ld);
-
 
         // Set up telemetry
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -146,7 +140,6 @@ public class Test2 extends OpMode {
         spate_dreapta.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         spate_stanga.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-
         // Initialize fudge factor
         armPositionFudgeFactor = 0;
 
@@ -164,7 +157,6 @@ public class Test2 extends OpMode {
         yToggle = new ToggleButtonReader(toolOp, GamepadKeys.Button.Y);
         xToggle = new ToggleButtonReader(toolOp, GamepadKeys.Button.X);
         rightToggle = new ToggleButtonReader(driverOp, GamepadKeys.Button.DPAD_RIGHT);
-        leftToggle = new ToggleButtonReader(toolOp, GamepadKeys.Button.DPAD_LEFT);
     }
 
     @Override
@@ -179,7 +171,6 @@ public class Test2 extends OpMode {
         yToggle.readValue();
         xToggle.readValue();
         rightToggle.readValue();
-        leftToggle.readValue();
 
         // Update PID parameters
         controller.setPID(p, i, d);
@@ -189,13 +180,12 @@ public class Test2 extends OpMode {
         int rawArmPos = motor_stanga.getCurrentPosition();
         int rawLiftPos = motor_glisiere.getCurrentPosition();
 
-
         // Define position ranges due to encoder errors (for telemetry and awareness)
         double armPosMin = rawArmPos - ARM_ENCODER_ERROR;
         double armPosMax = rawArmPos + ARM_ENCODER_ERROR;
         double liftPosMin = rawLiftPos - LIFT_ENCODER_ERROR;
         double liftPosMax = rawLiftPos + LIFT_ENCODER_ERROR;
-        double armPos = rawArmPos; // Use raw position for control, but error affects accuracy
+        double armPos = rawArmPos;
         double liftPos = rawLiftPos;
 
         // Calculate PID and feedforward
@@ -206,24 +196,15 @@ public class Test2 extends OpMode {
         double power = pid + ff;
         double lpower = lpid + lff;
 
-
         // Drivetrain control
         double y = -gamepad1.left_stick_y;
         double x = gamepad1.left_stick_x;
         double rx = gamepad1.right_stick_x;
-        double denominator = Math.max(abs(y) + abs(x) + abs(rx), 1.1);
+        double denominator = Math.max(abs(y) + abs(x) + abs(rx), 1);
         double frontLeftPower = (y + x + rx) / denominator;
         double backLeftPower = (y - x + rx) / denominator;
         double frontRightPower = (y - x - rx) / denominator;
         double backRightPower = (y + x - rx) / denominator;
-
-        // Automatic arm adjustment when in intake mode (stops at ARM_MIN_FOR_MAX_LIFT = 1100)
-        if (isIntakeMode && liftPos > LIFT_MIN && target < ARM_MIN_FOR_MAX_LIFT) {
-            double liftChange = liftPos - LIFT_MIN;              // How far lift has moved from LIFT_MIN
-            double armChange = liftChange * 1;                 // 1.5 arm ticks per lift tick (adjusted from 5)
-            double newArmTarget = ARM_MIN + armChange;           // Starting from ARM_MIN
-            target = Math.max(ARM_MIN, Math.min(ARM_MIN_FOR_MAX_LIFT, newArmTarget)); // Clamp to 1100
-        }
 
         // Set motor powers
         fata_stanga.setPower(frontLeftPower);
@@ -244,24 +225,17 @@ public class Test2 extends OpMode {
             ltarget -= 15;
         }
 
-        // Arm and lift presets with toggle for dpad_left
-        if (leftToggle.wasJustPressed()) {
-            if (!isIntakeMode) {
-                target = ARM_MIN;    // Initial arm position
-                ltarget = LIFT_MIN;  // Initial lift position
-                isIntakeMode = false; // Enable intake mode
-            } else {
-                isIntakeMode = false; // Disable intake mode on second press
-            }
+        // Arm and lift presets without intake mode
+        if (gamepad2.dpad_left) {
+            target = ARM_MIN;
+            ltarget = LIFT_MIN;
         }
         if (gamepad2.dpad_right) {
             target = armClosed;
             ltarget = liftClosed;
-            isIntakeMode = false;
         }
         if (gamepad2.dpad_up) {
             target = armCosSus;
-            isIntakeMode = false;
         }
         if (gamepad2.dpad_up && armPos > 4000) {
             ltarget = liftCosSus;
@@ -269,7 +243,6 @@ public class Test2 extends OpMode {
         if (gamepad2.dpad_down) {
             target = armCosJos;
             ltarget = liftClosed;
-            isIntakeMode = false;
         }
         if (rightToggle.wasJustPressed()) {
             if (cnt_right % 2 == 0) {
@@ -278,11 +251,9 @@ public class Test2 extends OpMode {
                 target = armHangPos2;
             }
             cnt_right++;
-            isIntakeMode = false; // Ensure intake mode is off
         }
         if (gamepad1.dpad_left) {
             target = armClosed;
-            isIntakeMode = false;
         }
         if (gamepad1.dpad_up) {
             h3target = armHang3Up;
@@ -291,19 +262,21 @@ public class Test2 extends OpMode {
             h3target = armHang3Down;
         }
 
-        // Enforce limits (removed lift upper limit)
-        if (liftPos < LIFT_MIN) {
-            ltarget = ltarget + abs(LIFT_MIN - ltarget);
+        // Enforce limits
+        if (rawLiftPos > LIFT_MAX_EXT) {
+            ltarget = ltarget - abs(LIFT_MAX_EXT - ltarget);
         }
-        if (armPos < 0) {
+        if (rawArmPos < 0) {
             target = 0;
+        }
+        if(rawArmPos < 4500 && ltarget > 1200 ){
+            ltarget = 1200;
         }
 
         // Servo controls with toggle readers
         if (aToggle.wasJustPressed()) {
             if (cnt_a % 2 == 0) {
                 cleste.setPosition(clesteDeschis);
-
             } else {
                 cleste.setPosition(clesteInchis);
                 gamepad1.rumble(1000);
@@ -321,7 +294,6 @@ public class Test2 extends OpMode {
         if (yToggle.wasJustPressed()) {
             target = ARM_INTAKE_SPECIMEN;
             cnt_y++;
-            isIntakeMode = false; // Ensure intake mode is off
         }
         if (xToggle.wasJustPressed()) {
             if (cnt_x % 2 == 0) {
@@ -330,9 +302,15 @@ public class Test2 extends OpMode {
                 target = ARM_RUNG;
             }
             cnt_x++;
-            isIntakeMode = false; // Ensure intake mode is off
         }
-        if (looptime > 75) {
+
+        // Check for options button to stop vibration
+        if (gamepad2.options) {
+            shouldVibrate = false;
+        }
+
+        // Vibration control with flag
+        if (shouldVibrate && looptime > 75) {
             gamepad1.rumble(2000);
             gamepad2.rumble(2000);
         }
@@ -343,8 +321,6 @@ public class Test2 extends OpMode {
         oldtime = looptime;
 
         // Telemetry with encoder error ranges
-        telemetry.addData("isIntakeMode", isIntakeMode);
-
         telemetry.addLine("PETUNIX");
         telemetry.addData("Arm Target", target);
         telemetry.addData("Arm Pos", rawArmPos);

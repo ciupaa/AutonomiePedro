@@ -34,10 +34,10 @@ public class Arm extends Subsystem {
         );
     }
 
-    public Command toIntake() {
+    public Command intake() {
         return new RunToPosition(
                 motor_stanga,    // MOTOR TO MOVE
-                666,            // TARGET POSITION, IN TICKS
+                800,            // TARGET POSITION, IN TICKS
                 controller,      // CONTROLLER TO IMPLEMENT
                 this            // IMPLEMENTED SUBSYSTEM
         );
@@ -46,7 +46,15 @@ public class Arm extends Subsystem {
     public Command toHigh() {
         return new RunToPosition(
                 motor_stanga,    // MOTOR TO MOVE
-                5950,            // TARGET POSITION, IN TICKS
+                5450,            // TARGET POSITION, IN TICKS
+                controller,      // CONTROLLER TO IMPLEMENT
+                this            // IMPLEMENTED SUBSYSTEM
+        );
+    }
+    public Command toHighUp() {
+        return new RunToPosition(
+                motor_stanga,    // MOTOR TO MOVE
+                5700,            // TARGET POSITION, IN TICKS
                 controller,      // CONTROLLER TO IMPLEMENT
                 this            // IMPLEMENTED SUBSYSTEM
         );
@@ -59,18 +67,43 @@ public class Arm extends Subsystem {
                 this            // IMPLEMENTED SUBSYSTEM
         );
     }
-    public Command toSpecOutTake() {
+    public Command specOutTake() {
         return new RunToPosition(
                 motor_stanga,    // MOTOR TO MOVE
-                5950,            // TARGET POSITION, IN TICKS
+                900,            // TARGET POSITION, IN TICKS
                 controller,      // CONTROLLER TO IMPLEMENT
                 this            // IMPLEMENTED SUBSYSTEM
         );
     }
-    public Command toSpecGo() {
+    public Command specIntake() {
         return new RunToPosition(
                 motor_stanga,    // MOTOR TO MOVE
-                5950,            // TARGET POSITION, IN TICKS
+                1000,            // TARGET POSITION, IN TICKS
+                controller,      // CONTROLLER TO IMPLEMENT
+                this            // IMPLEMENTED SUBSYSTEM
+        );
+    }
+    public Command hangPos1() {
+        return new RunToPosition(
+                motor_stanga,    // MOTOR TO MOVE
+                7140,            // TARGET POSITION, IN TICKS
+                controller,      // CONTROLLER TO IMPLEMENT
+                this            // IMPLEMENTED SUBSYSTEM
+        );
+    }
+
+    public Command specUp() {
+        return new RunToPosition(
+                motor_stanga,    // MOTOR TO MOVE
+                1200,            // TARGET POSITION, IN TICKS
+                controller,      // CONTROLLER TO IMPLEMENT
+                this            // IMPLEMENTED SUBSYSTEM
+        );
+    }
+    public Command grabIntake() {
+        return new RunToPosition(
+                motor_stanga,    // MOTOR TO MOVE
+                326,            // TARGET POSITION, IN TICKS
                 controller,      // CONTROLLER TO IMPLEMENT
                 this            // IMPLEMENTED SUBSYSTEM
         );

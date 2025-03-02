@@ -19,7 +19,7 @@ dependencies {
 
     implementation 'com.rowanmcalpin.nextftc:core:0.5.8-beta'
     implementation 'com.rowanmcalpin.nextftc:ftc:0.5.8-beta'
-    implementation 'com.rowanmcalpin.nextftc:pedro:0.5.4-beta1' // Remove if you don't intend to use PedroPathing
+    implementation 'com.rowanmcalpin.nextftc:pedro:0.5.8-beta' // Remove if you don't intend to use PedroPathing
     implementation 'com.pedropathing:pedro:1.0.8' // Remove if you don't intend to use PedroPathing
     implementation 'com.acmerobotics.dashboard:dashboard:0.4.16' // Remove if you don't intend to use the FTC Dashboard (required if using PedroPathing)
 

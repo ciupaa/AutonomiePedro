@@ -11,7 +11,6 @@ import com.pedropathing.util.Constants;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.rowanmcalpin.nextftc.core.command.groups.ParallelGroup;
 import com.rowanmcalpin.nextftc.core.command.groups.SequentialGroup;
-import com.rowanmcalpin.nextftc.core.command.utility.delays.Delay;
 import com.rowanmcalpin.nextftc.pedro.FollowPath;
 import com.rowanmcalpin.nextftc.pedro.PedroOpMode;
 import org.firstinspires.ftc.teamcode.SubSystems.ServoRotire;
@@ -22,9 +21,6 @@ import org.firstinspires.ftc.teamcode.SubSystems.Lift;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 
-
-import java.io.File;
-
 @Config
 @Autonomous(name = "AutoSpecimen")
 //
@@ -33,13 +29,14 @@ public class AutoSpecimen extends PedroOpMode {
     public AutoSpecimen() {
         super(Claw.INSTANCE, Lift.INSTANCE, ServoRotire.INSTANCE, Arm.INSTANCE);
     }
+    /*
     private final Pose startPose = new Pose(9.0, 85.0, Math.toRadians(0.0));
     private final Pose scorePose = new Pose(37.0, 50.0, Math.toRadians(180.0));
     private final Pose pickup1Pose = new Pose(0, 0, Math.toRadians(0));
     private final Pose pickup2Pose = new Pose(0, 0, Math.toRadians(0));
     private final Pose pickup3Pose = new Pose(0, 0, Math.toRadians(0));
     private final Pose parkPose = new Pose(0, 0, Math.toRadians(0));
-
+*/
     private PathChain gotoPickup1, gotoPickup2, gotoPickup3, gotoIntermediar,
             pushPickup1, pushPickup2, pushPickup3,
             grabPickup1, grabPickup2, grabPickup3, grabHumanPlayer,
@@ -240,15 +237,16 @@ public class AutoSpecimen extends PedroOpMode {
 
     public SequentialGroup secondRoutine() {
         return new SequentialGroup(
+                ServoRotire.INSTANCE.intake(),
+                Claw.INSTANCE.close(),
 
-            Claw.INSTANCE.close(),
 
             new ParallelGroup(
                  new FollowPath(scorePreload),
-                 Arm.INSTANCE.toSpecOutTake()
+                 Arm.INSTANCE.specUp()
             ),
 
-            Arm.INSTANCE.toSpecGo(),
+            Arm.INSTANCE.specOutTake(),
             Claw.INSTANCE.open(),
 
             new FollowPath(gotoIntermediar),
@@ -261,17 +259,16 @@ public class AutoSpecimen extends PedroOpMode {
 
             new ParallelGroup(
                     new FollowPath(grabPickup1),
-                    Arm.INSTANCE.toSpecIntake()
+                    Arm.INSTANCE.specIntake()
             ),
 
             Claw.INSTANCE.close(),
 
             new ParallelGroup(
                     new FollowPath(scorePickup1),
-                    Arm.INSTANCE.toSpecOutTake()
+                    Arm.INSTANCE.specUp()
             ),
-
-            Arm.INSTANCE.toSpecGo(),
+            Arm.INSTANCE.specOutTake(),
             Claw.INSTANCE.open(),
 
             new ParallelGroup(
@@ -283,45 +280,45 @@ public class AutoSpecimen extends PedroOpMode {
 
             new ParallelGroup(
                     new FollowPath(scorePickup2),
-                    Arm.INSTANCE.toSpecOutTake()
+                    Arm.INSTANCE.specUp()
             ),
 
-            Arm.INSTANCE.toSpecGo(),
+            Arm.INSTANCE.specOutTake(),
             Claw.INSTANCE.open(),
 
             new ParallelGroup(
                     new FollowPath(grabPickup3),
-                    Arm.INSTANCE.toSpecIntake()
+                    Arm.INSTANCE.specUp()
             ),
-
             Claw.INSTANCE.close(),
 
             new ParallelGroup(
                     new FollowPath(scorePickup3),
-                    Arm.INSTANCE.toSpecOutTake()
+                    Arm.INSTANCE.specUp()
             ),
 
-            Arm.INSTANCE.toSpecGo(),
+            Arm.INSTANCE.specOutTake(),
             Claw.INSTANCE.open(),
 
             new ParallelGroup(
                     new FollowPath(grabHumanPlayer),
-                    Arm.INSTANCE.toSpecIntake()
+                    Arm.INSTANCE.specIntake()
             ),
 
             Claw.INSTANCE.close(),
 
             new ParallelGroup(
                     new FollowPath(scoreHumanPlayer),
-                    Arm.INSTANCE.toSpecOutTake()
+                    Arm.INSTANCE.specUp()
             ),
 
-            Arm.INSTANCE.toSpecGo(),
+
+            Arm.INSTANCE.specOutTake(),
             Claw.INSTANCE.open(),
 
             new ParallelGroup(
                 new FollowPath(Park),
-                Arm.INSTANCE.toIntake(),
+                Arm.INSTANCE.intake(),
                 Lift.INSTANCE.closed()
             )
         );

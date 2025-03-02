@@ -9,12 +9,8 @@ import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Constants;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.rowanmcalpin.nextftc.core.command.groups.ParallelGroup;
 import com.rowanmcalpin.nextftc.core.command.groups.SequentialGroup;
-import com.rowanmcalpin.nextftc.core.command.utility.delays.Delay;
 import com.rowanmcalpin.nextftc.pedro.FollowPath;
 import com.rowanmcalpin.nextftc.pedro.PedroOpMode;
 import org.firstinspires.ftc.teamcode.SubSystems.ServoRotire;
@@ -27,7 +23,6 @@ import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
-import com.qualcomm.hardware.limelightvision.LLStatus;
 
 import java.util.List;
 
@@ -215,7 +210,7 @@ public class LimelightCamera extends PedroOpMode {
                 new ParallelGroup(
                         new FollowPath(dynamicPathToTarget),
                         ServoRotire.INSTANCE.intake(),
-                        Arm.INSTANCE.toIntake(),
+                        Arm.INSTANCE.intake(),
                         Lift.INSTANCE.closed()
                 ),
 
@@ -233,7 +228,7 @@ public class LimelightCamera extends PedroOpMode {
                 new ParallelGroup(
                         new FollowPath(grabPickup2),
                         ServoRotire.INSTANCE.intake(),
-                        Arm.INSTANCE.toIntake(),
+                        Arm.INSTANCE.intake(),
                         Lift.INSTANCE.closed()
                 ),
 
@@ -251,7 +246,7 @@ public class LimelightCamera extends PedroOpMode {
                 new ParallelGroup(
                         new FollowPath(grabPickup3),
                         ServoRotire.INSTANCE.intake(),
-                        Arm.INSTANCE.toIntake(),
+                        Arm.INSTANCE.intake(),
                         Lift.INSTANCE.closed()
                 ),
 

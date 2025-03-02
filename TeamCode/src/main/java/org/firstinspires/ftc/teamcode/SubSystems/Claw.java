@@ -5,6 +5,7 @@ import com.rowanmcalpin.nextftc.core.Subsystem;
 import com.rowanmcalpin.nextftc.core.command.Command;
 import com.rowanmcalpin.nextftc.ftc.OpModeData;
 import com.rowanmcalpin.nextftc.ftc.hardware.ServoToPosition;
+import com.rowanmcalpin.nextftc.ftc.hardware.controllables.HoldPosition;
 
 public class Claw extends Subsystem {
     // BOILERPLATE
@@ -18,13 +19,13 @@ public class Claw extends Subsystem {
 
     public Command open() {
         return new ServoToPosition(cleste, // SERVO TO MOVE
-                0, // POSITION TO MOVE TO
+                0.3, // POSITION TO MOVE TO
                 this); // IMPLEMENTED SUBSYSTEM
     }
 
     public Command close() {
         return new ServoToPosition(cleste, // SERVO TO MOVE
-                1, // POSITION TO MOVE TO
+                0, // POSITION TO MOVE TO
                 this); // IMPLEMENTED SUBSYSTEM
     }
 
@@ -32,4 +33,5 @@ public class Claw extends Subsystem {
     public void initialize() {
         cleste = OpModeData.INSTANCE.getHardwareMap().get(Servo.class, name);
     }
+
 }

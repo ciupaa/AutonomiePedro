@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.Autonomie;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.localization.Pose;
 import com.pedropathing.pathgen.BezierCurve;
 import com.pedropathing.pathgen.BezierLine;
@@ -11,6 +12,7 @@ import com.pedropathing.util.Constants;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.rowanmcalpin.nextftc.core.command.groups.ParallelGroup;
 import com.rowanmcalpin.nextftc.core.command.groups.SequentialGroup;
+import com.rowanmcalpin.nextftc.core.command.utility.delays.Delay;
 import com.rowanmcalpin.nextftc.pedro.FollowPath;
 import com.rowanmcalpin.nextftc.pedro.PedroOpMode;
 
@@ -21,13 +23,10 @@ import org.firstinspires.ftc.teamcode.SubSystems.ServoRotire;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 
-
 @Config
-@Autonomous(name = "AutoSampleTest")
-
-
-public class AutoSampleTest extends PedroOpMode {
-    public AutoSampleTest() {
+@Autonomous(name = "AutoSampleCopie2")
+public class AutoSampleCopie2 extends PedroOpMode {
+    public AutoSampleCopie2() {
         super(Claw.INSTANCE, Lift.INSTANCE, ServoRotire.INSTANCE, Arm.INSTANCE);
     }
 
@@ -39,7 +38,7 @@ public class AutoSampleTest extends PedroOpMode {
                         // Line 1
                         new BezierLine(
                                 new Point(7.000, 85.000, Point.CARTESIAN),
-                                new Point(15.252, 128.523, Point.CARTESIAN)
+                                new Point(12.306122448979592, 132.04081632653063, Point.CARTESIAN)
                         )
                 )
                 .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(135))
@@ -48,53 +47,55 @@ public class AutoSampleTest extends PedroOpMode {
         grabPickup1 = follower.pathBuilder()
                 .addPath(
                         // Line 2
-                        new BezierLine(
-                                new Point(15.252, 128.523, Point.CARTESIAN),
-                                new Point(34.000, 121.000, Point.CARTESIAN)
+                        new BezierCurve(
+                                new Point(12.306122448979592, 132.04081632653063, Point.CARTESIAN),
+                                new Point(22.430, 107.439, Point.CARTESIAN),
+                                new Point(40, 109.250, Point.CARTESIAN)
                         )
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(90))
                 .build();
 
         scorePickup1 = follower.pathBuilder()
                 .addPath(
                         // Line 3
                         new BezierLine(
-                                new Point(34.000, 121.000, Point.CARTESIAN),
-                                new Point(15.252, 128.523, Point.CARTESIAN)
+                                new Point(40, 109.250, Point.CARTESIAN),
+                                new Point(12.306122448979592, 132.04081632653063, Point.CARTESIAN)
                         )
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(135))
+                .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(135))
                 .build();
 
         grabPickup2 = follower.pathBuilder()
                 .addPath(
                         // Line 4
-                        new BezierLine(
-                                new Point(15.252, 128.523, Point.CARTESIAN),
-                                new Point(34.000, 131.000, Point.CARTESIAN)
+                        new BezierCurve(
+                                new Point(12.306122448979592, 132.04081632653063, Point.CARTESIAN),
+                                new Point(22.430, 115.514, Point.CARTESIAN),
+                                new Point(40, 120.250, Point.CARTESIAN)
                         )
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(90))
                 .build();
 
         scorePickup2 = follower.pathBuilder()
                 .addPath(
                         // Line 5
                         new BezierLine(
-                                new Point(34.000, 131.000, Point.CARTESIAN),
-                                new Point(15.252, 128.523, Point.CARTESIAN)
+                                new Point(40, 120.250, Point.CARTESIAN),
+                                new Point(12.306122448979592, 132.04081632653063, Point.CARTESIAN)
                         )
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(135))
+                .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(135))
                 .build();
 
         grabPickup3 = follower.pathBuilder()
                 .addPath(
                         // Line 6
                         new BezierLine(
-                                new Point(15.252, 128.523, Point.CARTESIAN),
-                                new Point(45.750, 130.250, Point.CARTESIAN)
+                                new Point(12.306122448979592, 132.04081632653063, Point.CARTESIAN),
+                                new Point(40, 130.250, Point.CARTESIAN)
                         )
                 )
                 .setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(90))
@@ -104,8 +105,8 @@ public class AutoSampleTest extends PedroOpMode {
                 .addPath(
                         // Line 7
                         new BezierLine(
-                                new Point(45.750, 130.250, Point.CARTESIAN),
-                                new Point(15.252, 128.523, Point.CARTESIAN)
+                                new Point(40, 130.250, Point.CARTESIAN),
+                                new Point(12.306122448979592, 132.04081632653063, Point.CARTESIAN)
                         )
                 )
                 .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(135))
@@ -114,9 +115,10 @@ public class AutoSampleTest extends PedroOpMode {
         Park = follower.pathBuilder()
                 .addPath(
                         // Line 8
-                        new BezierLine(
-                                new Point(15.252, 128.523, Point.CARTESIAN),
-                                new Point(61.458, 108.336, Point.CARTESIAN)
+                        new BezierCurve(
+                                new Point(12.306122448979592, 132.04081632653063, Point.CARTESIAN),
+                                new Point(55.785, 121.484, Point.CARTESIAN),
+                                new Point(65.363, 95.608, Point.CARTESIAN)
                         )
                 )
                 .setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(90))
@@ -125,79 +127,108 @@ public class AutoSampleTest extends PedroOpMode {
 
     public SequentialGroup secondRoutine() {
         return new SequentialGroup(
+                // Score Preload
                 Claw.INSTANCE.close(),
+                new Delay(0.5),
                 new ParallelGroup(
+                        Arm.INSTANCE.toHighUp(),
                         new FollowPath(scorePreload),
-                        Arm.INSTANCE.toHigh()
-                ),
-
-                new ParallelGroup(
-                        Lift.INSTANCE.toHigh(),
                         ServoRotire.INSTANCE.outtake()
                 ),
-
+                new Delay(0.5),
+                Lift.INSTANCE.toHigh(),
+                new Delay(0.5),
                 Claw.INSTANCE.open(),
+                new Delay(0.5),
 
+                // Grab Pickup 1
                 new ParallelGroup(
+                        Lift.INSTANCE.closed(),
                         new FollowPath(grabPickup1),
-                        ServoRotire.INSTANCE.intake(),
-                        Arm.INSTANCE.toIntake(),
-                        Lift.INSTANCE.closed()
+                        new Delay(1),
+                        Arm.INSTANCE.grabIntake(),
+                        ServoRotire.INSTANCE.outtake()
                 ),
-
+                new Delay(1),
+                Lift.INSTANCE.intake(),
+                new Delay(1),
                 Claw.INSTANCE.close(),
+                ServoRotire.INSTANCE.outtake(),
 
+
+                // Score Pickup 1
                 new ParallelGroup(
                         new FollowPath(scorePickup1),
-                        Arm.INSTANCE.toHigh(),
-                        Lift.INSTANCE.toHigh()
+                        new Delay(0.5),
+                        Arm.INSTANCE.toHighUp(),
+                        ServoRotire.INSTANCE.outtake()
                 ),
-
-                ServoRotire.INSTANCE.outtake(),
+                new Delay(1),
+                Lift.INSTANCE.toHigh(),
+                new Delay(0.5),
                 Claw.INSTANCE.open(),
+                new Delay(0.5),
+                ServoRotire.INSTANCE.outtake(),
+                new Delay(0.5),
+                Lift.INSTANCE.closed(),
 
+                // Grab Pickup 2
                 new ParallelGroup(
                         new FollowPath(grabPickup2),
-                        ServoRotire.INSTANCE.intake(),
-                        Arm.INSTANCE.toIntake(),
-                        Lift.INSTANCE.closed()
+                        Arm.INSTANCE.grabIntake(),
+                        ServoRotire.INSTANCE.outtake()
                 ),
-
+                new Delay(1),
+                Lift.INSTANCE.intake(),
+                new Delay(0.5),
                 Claw.INSTANCE.close(),
+                new Delay(1),
 
+                // Score Pickup 2
                 new ParallelGroup(
+                        Arm.INSTANCE.toHighUp(),
                         new FollowPath(scorePickup2),
-                        Arm.INSTANCE.toHigh(),
-                        Lift.INSTANCE.toHigh()
+                        ServoRotire.INSTANCE.outtake()
                 ),
-
-                ServoRotire.INSTANCE.outtake(),
+                new Delay(1),
+                Lift.INSTANCE.toHigh(),
+                new Delay(0.5),
                 Claw.INSTANCE.open(),
+                new Delay(0.5),
+                Lift.INSTANCE.closed(),
 
+                // Grab Pickup 3
                 new ParallelGroup(
                         new FollowPath(grabPickup3),
-                        ServoRotire.INSTANCE.intake(),
-                        Arm.INSTANCE.toIntake(),
-                        Lift.INSTANCE.closed()
+                        Arm.INSTANCE.grabIntake(),
+                        ServoRotire.INSTANCE.intake()
                 ),
-
+                new Delay(1),
+                Lift.INSTANCE.intake(),
+                new Delay(0.5),
                 Claw.INSTANCE.close(),
-
+                new Delay(1),
+                // Score Pickup 3
                 new ParallelGroup(
+                        Arm.INSTANCE.toHighUp(),
                         new FollowPath(scorePickup3),
-                        Arm.INSTANCE.toHigh(),
-                        Lift.INSTANCE.toHigh()
+                        ServoRotire.INSTANCE.outtake()
                 ),
-
-                ServoRotire.INSTANCE.outtake(),
+                new Delay(1),
+                Lift.INSTANCE.toHigh(),
+                new Delay(0.5),
                 Claw.INSTANCE.open(),
+                new Delay(0.5),
+                Lift.INSTANCE.closed(),
 
+                // Park
                 new ParallelGroup(
                         new FollowPath(Park),
-                        Arm.INSTANCE.closed(),
+                        Arm.INSTANCE.hangPos1(),
                         Lift.INSTANCE.closed(),
                         ServoRotire.INSTANCE.intake()
-                )
+                ),
+                new Delay(1) // Added for consistency with previous steps
         );
     }
 
