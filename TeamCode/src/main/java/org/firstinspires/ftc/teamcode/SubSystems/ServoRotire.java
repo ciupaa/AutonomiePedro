@@ -27,6 +27,11 @@ public class ServoRotire extends Subsystem {
                 0.7, // POSITION TO MOVE TO
                 this); // IMPLEMENTED SUBSYSTEM
     }
+    public Command autoOut() {
+        return new ServoToPosition(servoRotire, // SERVO TO MOVE
+                1, // POSITION TO MOVE TO
+                this); // IMPLEMENTED SUBSYSTEM
+    }
 
     @Override
     public void initialize() {

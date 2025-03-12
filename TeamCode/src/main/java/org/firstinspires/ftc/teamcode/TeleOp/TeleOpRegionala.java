@@ -32,21 +32,25 @@ public class TeleOpRegionala extends OpMode {
     private DcMotorEx spate_dreapta;
     private Servo servoRotire;
     private Servo cleste;
+    private DcMotorEx spec = null;
 
     // PID Controllers
     private PIDController controller;
     private PIDController lcontroller;
+    private PIDController scontroller;
 
     // PID Tuning Parameters
     public static double p = 0.0055, i = 0, d = 0.0002;
     public static double f = 0.0011;
     public static double lp = 0.02, li = 0, ld = 0.0002;
     public static double lf = 0.14;
+    public static double sp = 0.01, si = 0, sd = 0;
+    public static double sf = 0;
+    public static double sarget = 0;
 
     // Target Positions
     public static double target = 100;
     public static double ltarget = 50;
-    public static double h3target = 0;
 
     // Conversion Constants
     private final double ticks_in_degree = 2.77;
@@ -62,8 +66,6 @@ public class TeleOpRegionala extends OpMode {
     double armIntake = 1400;
     double armHangPos1 = 7140;
     double armHangPos2 = 8701;
-    double armHang3Down = 0;
-    double armHang3Up = 3900;
     private static final double ARM_INTAKE_SPECIMEN = 1600;
     private static final double ARM_RUNG = 2100;
     private static final double ARM_OUTTAKE_RUNG = 1800;
@@ -71,6 +73,11 @@ public class TeleOpRegionala extends OpMode {
     double liftMax = 1000;
     double liftCosSus = 1600;
     double liftCosJos = 500;
+
+    double specSus = 2380;
+    double specRung = 2000;
+    double specOut = 100;
+    double specClose = 10;
 
     double clesteDeschis = 0.3;
     double clesteInchis = 0;
@@ -90,12 +97,14 @@ public class TeleOpRegionala extends OpMode {
     private int cnt_x = 0;
     private int cnt_y = 0;
     private int cnt_right = 0;
+    private int cnt_dpad_up = 0;    // Counter for D-pad up
+    private int cnt_dpad_down = 0;  // Counter for D-pad down
 
     // Timing and State
     double cycletime = 0;
     double looptime = 0;
     double oldtime = 0;
-    private boolean shouldVibrate = true;  // New flag to control vibration
+    private boolean shouldVibrate = true;
 
     private static final double LIFT_MIN = 50;
     private static final double LIFT_MAX_EXT = 1570;
@@ -108,12 +117,15 @@ public class TeleOpRegionala extends OpMode {
     private ToggleButtonReader yToggle;
     private ToggleButtonReader xToggle;
     private ToggleButtonReader rightToggle;
+    private ToggleButtonReader dpadUpToggle;    // New toggle for D-pad up
+    private ToggleButtonReader dpadDownToggle;  // New toggle for D-pad down
 
     @Override
     public void init() {
         // Initialize PID Controllers
         controller = new PIDController(p, i, d);
         lcontroller = new PIDController(lp, li, ld);
+        scontroller = new PIDController(sp, si, sd);
 
         // Set up telemetry
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -127,12 +139,14 @@ public class TeleOpRegionala extends OpMode {
         spate_dreapta = hardwareMap.get(DcMotorEx.class, "spate_dreapta");
         cleste = hardwareMap.get(Servo.class, "cleste");
         servoRotire = hardwareMap.get(Servo.class, "servoRotire");
+        spec = hardwareMap.get(DcMotorEx.class, "spec");
 
         // Configure motor directions
         motor_stanga.setDirection(DcMotorSimple.Direction.FORWARD);
         motor_glisiere.setDirection(DcMotorSimple.Direction.REVERSE);
         fata_stanga.setDirection(DcMotorSimple.Direction.REVERSE);
         spate_stanga.setDirection(DcMotorSimple.Direction.REVERSE);
+        spec.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // Set brake behavior
         fata_dreapta.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -157,11 +171,12 @@ public class TeleOpRegionala extends OpMode {
         yToggle = new ToggleButtonReader(toolOp, GamepadKeys.Button.Y);
         xToggle = new ToggleButtonReader(toolOp, GamepadKeys.Button.X);
         rightToggle = new ToggleButtonReader(driverOp, GamepadKeys.Button.DPAD_RIGHT);
+        dpadUpToggle = new ToggleButtonReader(driverOp, GamepadKeys.Button.DPAD_UP);     // Initialize D-pad up toggle
+        dpadDownToggle = new ToggleButtonReader(driverOp, GamepadKeys.Button.DPAD_DOWN); // Initialize D-pad down toggle
     }
 
     @Override
     public void loop() {
-        // Gamepad initialization
         GamepadEx driverOp = new GamepadEx(gamepad1);
         GamepadEx toolOp = new GamepadEx(gamepad2);
 
@@ -171,16 +186,20 @@ public class TeleOpRegionala extends OpMode {
         yToggle.readValue();
         xToggle.readValue();
         rightToggle.readValue();
+        dpadUpToggle.readValue();    // Update D-pad up toggle state
+        dpadDownToggle.readValue();  // Update D-pad down toggle state
 
         // Update PID parameters
         controller.setPID(p, i, d);
         lcontroller.setPID(lp, li, ld);
+        scontroller.setPID(sp, si, sd);
 
-        // Get current positions with simulated encoder error bounds
+        // Get current positions
         int rawArmPos = motor_stanga.getCurrentPosition();
         int rawLiftPos = motor_glisiere.getCurrentPosition();
+        int specPos = spec.getCurrentPosition();
 
-        // Define position ranges due to encoder errors (for telemetry and awareness)
+        // Define position ranges due to encoder errors
         double armPosMin = rawArmPos - ARM_ENCODER_ERROR;
         double armPosMax = rawArmPos + ARM_ENCODER_ERROR;
         double liftPosMin = rawLiftPos - LIFT_ENCODER_ERROR;
@@ -191,10 +210,13 @@ public class TeleOpRegionala extends OpMode {
         // Calculate PID and feedforward
         double pid = controller.calculate(armPos, target + armPositionFudgeFactor);
         double lpid = lcontroller.calculate(liftPos, ltarget);
+        double spid = scontroller.calculate(specPos, sarget);
         double ff = Math.cos(Math.toRadians((target + armPositionFudgeFactor) / ticks_in_degree)) * f;
         double lff = lf;
+        double sff = sf;
         double power = pid + ff;
         double lpower = lpid + lff;
+        double sower = spid + sff;
 
         // Drivetrain control
         double y = -gamepad1.left_stick_y;
@@ -213,6 +235,7 @@ public class TeleOpRegionala extends OpMode {
         spate_dreapta.setPower(backRightPower);
         motor_glisiere.setPower(lpower);
         motor_stanga.setPower(power);
+        spec.setPower(sower);
 
         // Update fudge factor
         armPositionFudgeFactor = FUDGE_FACTOR * (gamepad2.right_trigger + (-gamepad2.left_trigger));
@@ -225,7 +248,30 @@ public class TeleOpRegionala extends OpMode {
             ltarget -= 15;
         }
 
-        // Arm and lift presets without intake mode
+        // Specimen control with D-pad toggles on gamepad1
+        if (dpadUpToggle.wasJustPressed()) {
+            cnt_dpad_up++;
+            cnt_dpad_down = 0;  // Reset down counter when going up
+            if (cnt_dpad_up == 1) {
+                sarget = specRung;  // First press goes to specRung (1500)
+            } else if (cnt_dpad_up >= 2) {
+                sarget = specSus;   // Second press goes to specSus (2380)
+                cnt_dpad_up = 2;    // Cap the counter at 2
+            }
+        }
+
+        if (dpadDownToggle.wasJustPressed()) {
+            cnt_dpad_down++;
+            cnt_dpad_up = 0;    // Reset up counter when going down
+            if (cnt_dpad_down == 1) {
+                sarget = specOut;   // First press goes to specOut (100)
+            } else if (cnt_dpad_down >= 2) {
+                sarget = specClose; // Second press goes to specClose (10)
+                cnt_dpad_down = 2;  // Cap the counter at 2
+            }
+        }
+
+        // Arm and lift presets
         if (gamepad2.dpad_left) {
             target = ARM_MIN;
             ltarget = LIFT_MIN;
@@ -237,7 +283,7 @@ public class TeleOpRegionala extends OpMode {
         if (gamepad2.dpad_up) {
             target = armCosSus;
         }
-        if (gamepad2.dpad_up && armPos > 4000) {
+        if (gamepad2.dpad_up && armPos > 2500) {
             ltarget = liftCosSus;
         }
         if (gamepad2.dpad_down) {
@@ -255,12 +301,6 @@ public class TeleOpRegionala extends OpMode {
         if (gamepad1.dpad_left) {
             target = armClosed;
         }
-        if (gamepad1.dpad_up) {
-            h3target = armHang3Up;
-        }
-        if (gamepad1.dpad_down) {
-            h3target = armHang3Down;
-        }
 
         // Enforce limits
         if (rawLiftPos > LIFT_MAX_EXT) {
@@ -269,7 +309,7 @@ public class TeleOpRegionala extends OpMode {
         if (rawArmPos < 0) {
             target = 0;
         }
-        if(rawArmPos < 4500 && ltarget > 1200 ){
+        if (rawArmPos < 4500 && ltarget > 1200) {
             ltarget = 1200;
         }
 
@@ -309,8 +349,8 @@ public class TeleOpRegionala extends OpMode {
             shouldVibrate = false;
         }
 
-        // Vibration control with flag
-        if (shouldVibrate && looptime > 75) {
+        // Vibration controlm
+        if (shouldVibrate && looptime > 90) {
             gamepad1.rumble(2000);
             gamepad2.rumble(2000);
         }
@@ -320,12 +360,14 @@ public class TeleOpRegionala extends OpMode {
         cycletime = looptime - oldtime;
         oldtime = looptime;
 
-        // Telemetry with encoder error ranges
+        // Telemetry
         telemetry.addLine("PETUNIX");
         telemetry.addData("Arm Target", target);
         telemetry.addData("Arm Pos", rawArmPos);
         telemetry.addData("Lift Target", ltarget);
         telemetry.addData("Lift Pos", rawLiftPos);
+        telemetry.addData("Spec Target", sarget);
+        telemetry.addData("Spec Pos", specPos);
         telemetry.addLine("ROBOPEDA");
         telemetry.addLine("CIUPA, LUCAS & GEORGE");
         telemetry.addLine("PETUNIX");

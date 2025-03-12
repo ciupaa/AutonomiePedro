@@ -201,7 +201,7 @@ public class PID extends OpMode {
         motor_stanga.setPower(power);
 
         // Hang servos control
-        hang31.setPower(gamepad1.right_trigger + (-gamepad1.left_trigger));
+        hang31  .setPower(gamepad1.right_trigger + (-gamepad1.left_trigger));
         hang32.setPower(gamepad1.right_trigger + (-gamepad1.left_trigger));
 
         // Update fudge factor

@@ -158,6 +158,9 @@ public class LimelightCamera extends PedroOpMode {
                 LLResultTypes.DetectorResult detection = detectorResults.get(0); // Use first detection
                 tx = detection.getTargetXDegrees(); // Horizontal offset in degrees
                 ty = detection.getTargetYDegrees(); // Vertical offset in degrees
+                for (LLResultTypes.DetectorResult detectionResult : detectorResults) {
+
+                }
                 telemetry.addData("Limelight Detection", "tx: %.2f°, ty: %.2f°", tx, ty);
             }
         } else {

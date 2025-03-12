@@ -21,7 +21,7 @@ public class Arm extends Subsystem {
     public PIDControllerWrapper controller = new PIDControllerWrapper(
             new PIDController(0.0055, 0, 0.0002),
             0.0011,
-            150
+            200
     );
     public String name = "motor_stanga";
 
@@ -103,7 +103,31 @@ public class Arm extends Subsystem {
     public Command grabIntake() {
         return new RunToPosition(
                 motor_stanga,    // MOTOR TO MOVE
-                326,            // TARGET POSITION, IN TICKS
+                160,            // TARGET POSITION, IN TICKS
+                controller,      // CONTROLLER TO IMPLEMENT
+                this            // IMPLEMENTED SUBSYSTEM
+        );
+    }
+    public Command armBack() {
+        return new RunToPosition(
+                motor_stanga,    // MOTOR TO MOVE
+                6750,            // TARGET POSITION, IN TICKS
+                controller,      // CONTROLLER TO IMPLEMENT
+                this            // IMPLEMENTED SUBSYSTEM
+        );
+    }
+    public Command armPick() {
+        return new RunToPosition(
+                motor_stanga,    // MOTOR TO MOVE
+                80,            // TARGET POSITION, IN TICKS
+                controller,      // CONTROLLER TO IMPLEMENT
+                this            // IMPLEMENTED SUBSYSTEM
+        );
+    }
+    public Command armOut() {
+        return new RunToPosition(
+                motor_stanga,    // MOTOR TO MOVE
+                80,            // TARGET POSITION, IN TICKS
                 controller,      // CONTROLLER TO IMPLEMENT
                 this            // IMPLEMENTED SUBSYSTEM
         );

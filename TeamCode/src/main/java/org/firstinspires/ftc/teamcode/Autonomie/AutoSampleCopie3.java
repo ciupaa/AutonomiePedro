@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.Autonomie;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.localization.Pose;
 import com.pedropathing.pathgen.BezierCurve;
 import com.pedropathing.pathgen.BezierLine;
@@ -24,9 +23,9 @@ import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 
 @Config
-@Autonomous(name = "AutoSampleCopie2")
-public class AutoSampleCopie2 extends PedroOpMode {
-    public AutoSampleCopie2() {
+@Autonomous(name = "AutoSampleCopie3")
+public class AutoSampleCopie3 extends PedroOpMode {
+    public AutoSampleCopie3() {
         super(Claw.INSTANCE, Lift.INSTANCE, ServoRotire.INSTANCE, Arm.INSTANCE);
     }
 
@@ -47,12 +46,13 @@ public class AutoSampleCopie2 extends PedroOpMode {
         grabPickup1 = follower.pathBuilder()
                 .addPath(
                         // Line 3
-                        new BezierLine(
-                                new Point(16.941176470588236, 127.8288770053476, Point.CARTESIAN),
-                                new Point(26.449, 125.082, Point.CARTESIAN)
+                        new BezierCurve(
+                                new Point(16.941, 127.829, Point.CARTESIAN),
+                                new Point(20.214, 99.529, Point.CARTESIAN),
+                                new Point(38.5, 107, Point.CARTESIAN)
                         )
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(-47), Math.toRadians(-12))
+                .setLinearHeadingInterpolation(Math.toRadians(-47), Math.toRadians(65))
                 .build();
 
         scorePickup1 = follower.pathBuilder()
@@ -69,12 +69,15 @@ public class AutoSampleCopie2 extends PedroOpMode {
         grabPickup2 = follower.pathBuilder()
                 .addPath(
                         // Line 5
-                        new BezierLine(
-                                new Point(16.941176470588236, 127.8288770053476, Point.CARTESIAN),
-                                new Point(26.449, 125.082, Point.CARTESIAN)
+                        new BezierCurve(
+                                new Point(16.941, 127.829, Point.CARTESIAN),
+                                new Point(16.556, 114.545, Point.CARTESIAN),
+                               // new Point(26.449, 125.082, Point.CARTESIAN)
+                                 new Point(37.15508021390374, 119.55080213903743, Point.CARTESIAN)
+
                         )
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(-47), Math.toRadians(19))
+                .setLinearHeadingInterpolation(Math.toRadians(-47), Math.toRadians(60))
                 .build();
 
         scorePickup2 = follower.pathBuilder()
@@ -147,16 +150,17 @@ public class AutoSampleCopie2 extends PedroOpMode {
 
                 // Grab Pickup 1
                 new ParallelGroup(
-                        Lift.INSTANCE.closed(),
+                        Lift.INSTANCE.toIntakeSpecimen(),
                         new FollowPath(grabPickup1),
-                        new Delay(1),
-                        Arm.INSTANCE.grabIntake(),
                         Claw.INSTANCE.open(),
-                        ServoRotire.INSTANCE.intake()
+                        ServoRotire.INSTANCE.outtake()
+
                 ),
+                new Delay(0.5),
+                Arm.INSTANCE.armPick(),
                 new Delay(0.3),
-                Lift.INSTANCE.intake(),
-                new Delay(0.3),
+                Arm.INSTANCE.armOut(),
+                new Delay(0.4),
                 Claw.INSTANCE.close(),
                 ServoRotire.INSTANCE.outtake(),
                 new Delay(0.3),
@@ -165,8 +169,9 @@ public class AutoSampleCopie2 extends PedroOpMode {
                 // Score Pickup 1
                 new ParallelGroup(
                         Arm.INSTANCE.armBack(),
-                        new FollowPath(scorePickup1)
-                ),
+                        new FollowPath(scorePickup1),
+                        Lift.INSTANCE.closed()
+                        ),
                 new Delay(0.2),
                 Lift.INSTANCE.toHigh(),
                 new Delay(0.5),
@@ -181,15 +186,13 @@ public class AutoSampleCopie2 extends PedroOpMode {
                 new Delay(0.4),
                 // Grab Pickup 2
                 new ParallelGroup(
-                        Lift.INSTANCE.closed(),
+                        Lift.INSTANCE.grab2(),
                         new FollowPath(grabPickup2),
                         new Delay(1),
-                        Arm.INSTANCE.grabIntake(),
+                        Arm.INSTANCE.armPick(),
                         Claw.INSTANCE.open(),
-                        ServoRotire.INSTANCE.intake()
+                        ServoRotire.INSTANCE.outtake()
                 ),
-                new Delay(0.3),
-                Lift.INSTANCE.intake(),
                 new Delay(0.5),
                 Claw.INSTANCE.close(),
                 new Delay(1),
@@ -209,7 +212,7 @@ public class AutoSampleCopie2 extends PedroOpMode {
                 ServoRotire.INSTANCE.intake(),
                 Claw.INSTANCE.open(),
                 new Delay(0.4),
-                Claw.INSTANCE.close(),
+                Claw.INSTANCE.open(),
                 new Delay(0.4),
                 // Grab Pickup 3
                 new ParallelGroup(

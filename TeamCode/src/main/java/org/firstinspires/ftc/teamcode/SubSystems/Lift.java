@@ -21,7 +21,7 @@ public class Lift extends Subsystem {
     public PIDControllerWrapper lcontroller = new PIDControllerWrapper(
             new PIDController(0.02, 0, 0.0002),
             0.14,
-            50
+            70
     );
     public String name = "motor_glisiere";
 
@@ -37,7 +37,15 @@ public class Lift extends Subsystem {
     public Command toIntakeSpecimen() {
         return new RunToPosition(
                 motor_glisiere,    // MOTOR TO MOVE
-                500,               // TARGET POSITION, IN TICKS
+                520,               // TARGET POSITION, IN TICKS
+                lcontroller,       // CONTROLLER TO IMPLEMENT
+                this              // IMPLEMENTED SUBSYSTEM
+        );
+    }
+    public Command grab2() {
+        return new RunToPosition(
+                motor_glisiere,    // MOTOR TO MOVE
+                430,               // TARGET POSITION, IN TICKS
                 lcontroller,       // CONTROLLER TO IMPLEMENT
                 this              // IMPLEMENTED SUBSYSTEM
         );
