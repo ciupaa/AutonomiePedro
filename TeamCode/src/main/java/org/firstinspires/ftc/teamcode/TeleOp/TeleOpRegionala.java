@@ -65,7 +65,7 @@ public class TeleOpRegionala extends OpMode {
     double armCosJos = 5950;
     double armIntake = 1400;
     double armHangPos1 = 7140;
-    double armHangPos2 = 8701;
+    double armHangPos2 = 7140;
     private static final double ARM_INTAKE_SPECIMEN = 1600;
     private static final double ARM_RUNG = 2100;
     private static final double ARM_OUTTAKE_RUNG = 1800;
@@ -309,8 +309,8 @@ public class TeleOpRegionala extends OpMode {
         if (rawArmPos < 0) {
             target = 0;
         }
-        if (rawArmPos < 4500 && ltarget > 1200) {
-            ltarget = 1200;
+        if (rawArmPos < 4500 && ltarget > 1400) {
+            ltarget = 1400;
         }
 
         // Servo controls with toggle readers

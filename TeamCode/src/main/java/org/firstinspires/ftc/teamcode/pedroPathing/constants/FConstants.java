@@ -42,16 +42,14 @@ public class FConstants {
         FollowerConstants.useSecondaryDrivePID = true;
         FollowerConstants.secondaryDrivePIDFCoefficients.setCoefficients(0,0,0,0.6,0); // Not being used, @see useSecondaryDrivePID
 
-        FollowerConstants.zeroPowerAccelerationMultiplier = 6;
+        FollowerConstants.zeroPowerAccelerationMultiplier = 5.5;
         FollowerConstants.centripetalScaling = 0.00013;
-
-        FollowerConstants.pathEndTimeoutConstraint = 25;
+        FollowerConstants.pathEndTimeoutConstraint = 5;
         FollowerConstants.pathEndTValueConstraint = 0.995;
         FollowerConstants.pathEndVelocityConstraint = 0.1;
         FollowerConstants.pathEndTranslationalConstraint = 0.1;
         FollowerConstants.pathEndHeadingConstraint = 0.007;
         FollowerConstants.useVoltageCompensationInAuto = true;
         FollowerConstants.nominalVoltage = 12;
-        FollowerConstants.maxPower = 1;
     }
 }
