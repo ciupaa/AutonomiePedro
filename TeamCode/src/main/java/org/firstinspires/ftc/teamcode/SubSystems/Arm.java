@@ -37,7 +37,7 @@ public class Arm extends Subsystem {
     public Command intake() {
         return new RunToPosition(
                 motor_stanga,    // MOTOR TO MOVE
-                800,            // TARGET POSITION, IN TICKS
+                500,            // TARGET POSITION, IN TICKS
                 controller,      // CONTROLLER TO IMPLEMENT
                 this            // IMPLEMENTED SUBSYSTEM
         );
@@ -46,7 +46,7 @@ public class Arm extends Subsystem {
     public Command toHigh() {
         return new RunToPosition(
                 motor_stanga,    // MOTOR TO MOVE
-                5450,            // TARGET POSITION, IN TICKS
+                4500,            // TARGET POSITION, IN TICKS
                 controller,      // CONTROLLER TO IMPLEMENT
                 this            // IMPLEMENTED SUBSYSTEM
         );
@@ -54,7 +54,7 @@ public class Arm extends Subsystem {
     public Command toHighUp() {
         return new RunToPosition(
                 motor_stanga,    // MOTOR TO MOVE
-                5700,            // TARGET POSITION, IN TICKS
+                5000,            // TARGET POSITION, IN TICKS
                 controller,      // CONTROLLER TO IMPLEMENT
                 this            // IMPLEMENTED SUBSYSTEM
         );
@@ -75,10 +75,10 @@ public class Arm extends Subsystem {
                 this            // IMPLEMENTED SUBSYSTEM
         );
     }
-    public Command specIntake() {
+    public Command paralel() {
         return new RunToPosition(
                 motor_stanga,    // MOTOR TO MOVE
-                1000,            // TARGET POSITION, IN TICKS
+                250,            // TARGET POSITION, IN TICKS
                 controller,      // CONTROLLER TO IMPLEMENT
                 this            // IMPLEMENTED SUBSYSTEM
         );
@@ -103,7 +103,7 @@ public class Arm extends Subsystem {
     public Command grabIntake() {
         return new RunToPosition(
                 motor_stanga,    // MOTOR TO MOVE
-                160,            // TARGET POSITION, IN TICKS
+                125,            // TARGET POSITION, IN TICKS
                 controller,      // CONTROLLER TO IMPLEMENT
                 this            // IMPLEMENTED SUBSYSTEM
         );

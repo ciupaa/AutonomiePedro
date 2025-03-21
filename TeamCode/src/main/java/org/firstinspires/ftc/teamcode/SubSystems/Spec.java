@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.SubSystems;
 
+import static org.firstinspires.ftc.teamcode.Autonomie.AutoSpecimen4.Closed;
+import static org.firstinspires.ftc.teamcode.Autonomie.AutoSpecimen4.Outtt;
+import static org.firstinspires.ftc.teamcode.Autonomie.AutoSpecimen4.upPos;
+
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.rowanmcalpin.nextftc.core.Subsystem;
@@ -29,7 +33,15 @@ public class Spec extends Subsystem {
     public Command closed() {
         return new RunToPosition(
                 spec,    // MOTOR TO MOVE
-                0,                // TARGET POSITION, IN TICKS
+                20,                // TARGET POSITION, IN TICKS
+                scontroller,       // CONTROLLER TO IMPLEMENT
+                this              // IMPLEMENTED SUBSYSTEM
+        );
+    }
+    public Command outTake() {
+        return new RunToPosition(
+                spec,    // MOTOR TO MOVE
+                Outtt,                // TARGET POSITION, IN TICKS
                 scontroller,       // CONTROLLER TO IMPLEMENT
                 this              // IMPLEMENTED SUBSYSTEM
         );
@@ -45,7 +57,7 @@ public class Spec extends Subsystem {
     public Command Up() {
         return new RunToPosition(
                 spec,    // MOTOR TO MOVE
-                2000,                // TARGET POSITION, IN TICKS
+                upPos,                // TARGET POSITION, IN TICKS
                 scontroller,       // CONTROLLER TO IMPLEMENT
                 this              // IMPLEMENTED SUBSYSTEM
         );

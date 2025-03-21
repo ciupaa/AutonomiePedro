@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.SubSystems;
 
+import static org.firstinspires.ftc.teamcode.Autonomie.AutoSampleCopie4.lift1;
+import static org.firstinspires.ftc.teamcode.Autonomie.AutoSampleCopie4.lift2;
+
+
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.rowanmcalpin.nextftc.core.Subsystem;
@@ -8,7 +12,6 @@ import com.rowanmcalpin.nextftc.ftc.hardware.controllables.HoldPosition;
 import com.rowanmcalpin.nextftc.ftc.hardware.controllables.MotorEx;
 import com.rowanmcalpin.nextftc.ftc.hardware.controllables.RunToPosition;
 import org.firstinspires.ftc.teamcode.Autonomie.PIDControllerWrapper;
-
 public class Lift extends Subsystem {
     // Singleton pattern (BOILERPLATE)
     public static final Lift INSTANCE = new Lift();
@@ -63,6 +66,21 @@ public class Lift extends Subsystem {
         return new RunToPosition(
                 motor_glisiere,    // MOTOR TO MOVE
                 600,              // TARGET POSITION, IN TICKS
+                lcontroller,       // CONTROLLER TO IMPLEMENT
+                this              // IMPLEMENTED SUBSYSTEM
+        );
+    }
+    public Command l1() {
+        return new RunToPosition(
+                motor_glisiere,    // MOTOR TO MOVE
+                lift1,              // TARGET POSITION, IN TICKS
+                lcontroller,       // CONTROLLER TO IMPLEMENT
+                this              // IMPLEMENTED SUBSYSTEM
+        );
+    }    public Command l2() {
+        return new RunToPosition(
+                motor_glisiere,    // MOTOR TO MOVE
+                lift2,              // TARGET POSITION, IN TICKS
                 lcontroller,       // CONTROLLER TO IMPLEMENT
                 this              // IMPLEMENTED SUBSYSTEM
         );

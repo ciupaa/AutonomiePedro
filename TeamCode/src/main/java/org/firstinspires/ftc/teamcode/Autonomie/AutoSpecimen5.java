@@ -24,9 +24,9 @@ import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 
 @Config
-@Autonomous(name = "AutoSpecimen3")
-public class AutoSpecimen3 extends PedroOpMode {
-    public AutoSpecimen3() {
+@Autonomous(name = "AutoSpecimen5")
+public class AutoSpecimen5 extends PedroOpMode {
+    public AutoSpecimen5() {
         super(Claw.INSTANCE, Lift.INSTANCE, ServoRotire.INSTANCE, Arm.INSTANCE, Spec.INSTANCE);
     }
 
@@ -36,7 +36,7 @@ public class AutoSpecimen3 extends PedroOpMode {
 
     public void buildPaths() {
         scorePreload = follower.pathBuilder()
-              //  .setPathEndTimeoutConstraint(0)
+                //  .setPathEndTimeoutConstraint(0)
                 .addPath(
                         // Line 1
                         new BezierLine(
@@ -45,7 +45,7 @@ public class AutoSpecimen3 extends PedroOpMode {
                         )
                 )
                 .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
-               // .setZeroPowerAccelerationMultiplier(1)
+                // .setZeroPowerAccelerationMultiplier(1)
                 .build();
 
         gotoIntermediar = follower.pathBuilder()
@@ -65,7 +65,7 @@ public class AutoSpecimen3 extends PedroOpMode {
                         // Line 3
                         new BezierLine(
                                 new Point(58.000, 33.052, Point.CARTESIAN),
-                                new Point(55, 21.495, Point.CARTESIAN)
+                                new Point(56.000, 21.495, Point.CARTESIAN)
                         )
                 )
                 .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
@@ -75,7 +75,7 @@ public class AutoSpecimen3 extends PedroOpMode {
                 .addPath(
                         // Line 4
                         new BezierLine(
-                                new Point(55, 21.495, Point.CARTESIAN),
+                                new Point(56.000, 21.495, Point.CARTESIAN),
                                 new Point(17, 20.724, Point.CARTESIAN)
                         )
                 )
@@ -86,9 +86,9 @@ public class AutoSpecimen3 extends PedroOpMode {
                 .addPath(
                         // Line 5
                         new BezierCurve(
-                                    new Point(14.000, 20.724, Point.CARTESIAN),
+                                new Point(14.000, 20.724, Point.CARTESIAN),
                                 new Point(67.994, 24.191, Point.CARTESIAN),
-                                new Point(55, 12.249, Point.CARTESIAN)
+                                new Point(56, 12.249, Point.CARTESIAN)
                         )
                 )
                 .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
@@ -98,7 +98,7 @@ public class AutoSpecimen3 extends PedroOpMode {
                 .addPath(
                         // Line 6
                         new BezierLine(
-                                new Point(55, 12.249, Point.CARTESIAN),
+                                new Point(56, 12.249, Point.CARTESIAN),
                                 new Point(17, 11.671, Point.CARTESIAN)
                         )
                 )
@@ -111,7 +111,7 @@ public class AutoSpecimen3 extends PedroOpMode {
                         new BezierCurve(
                                 new Point(15.602, 11.671, Point.CARTESIAN),
                                 new Point(55.089, 15.138, Point.CARTESIAN),
-                                new Point(55, 5, Point.CARTESIAN)
+                                new Point(56, 5, Point.CARTESIAN)
                         )
                 )
                 .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
@@ -121,7 +121,7 @@ public class AutoSpecimen3 extends PedroOpMode {
                 .addPath(
                         // Line 8
                         new BezierLine(
-                                new Point(55, 5, Point.CARTESIAN),
+                                new Point(56, 5, Point.CARTESIAN),
                                 new Point(17, 8, Point.CARTESIAN)
                         )
                 )
@@ -223,7 +223,7 @@ public class AutoSpecimen3 extends PedroOpMode {
                         // Line 10
                         new BezierLine(
                                 new Point(8, 24, Point.CARTESIAN),
-                                new Point(38, 70, Point.CARTESIAN)
+                                new Point(38, 74, Point.CARTESIAN)
                         )
                 )
                 .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
@@ -241,7 +241,7 @@ public class AutoSpecimen3 extends PedroOpMode {
                         Spec.INSTANCE.Up()
                 ),
                 new Delay(0.1),
-                Spec.INSTANCE.outTake(),
+                Spec.INSTANCE.specClosed(),
                 new Delay(0.1),
                 new FollowPath(gotoIntermediar),
                 new FollowPath(gotoPickup1),
@@ -256,9 +256,9 @@ public class AutoSpecimen3 extends PedroOpMode {
                 new ParallelGroup(
                         new FollowPath(path12),
                         Spec.INSTANCE.Up()
-                        ),
+                ),
                 new Delay(0.1),
-                Spec.INSTANCE.outTake(),
+                Spec.INSTANCE.closed(),
                 new FollowPath(getGrabPickup2),
                 new FollowPath(score2),
                 new Delay(0.1),
@@ -267,7 +267,7 @@ public class AutoSpecimen3 extends PedroOpMode {
                         Spec.INSTANCE.Up()
                 ),
                 new Delay(0.1),
-                Spec.INSTANCE.outTake(),
+                Spec.INSTANCE.closed(),
                 new FollowPath(getGetGrabPickup3),
                 new FollowPath(score3),
                 new Delay(0.1),
@@ -276,8 +276,8 @@ public class AutoSpecimen3 extends PedroOpMode {
                         Spec.INSTANCE.Up()
                 ),
                 new Delay(0.1),
-                Spec.INSTANCE.outTake()
-                );
+                Spec.INSTANCE.closed()
+        );
     }
 
     @Override

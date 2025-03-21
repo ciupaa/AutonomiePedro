@@ -9,6 +9,9 @@ import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.gamepad.ToggleButtonReader;
+import com.pedropathing.follower.Follower;
+import com.pedropathing.localization.Pose;
+import com.pedropathing.util.Constants;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -17,13 +20,19 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
+import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
+
 import java.util.List;
 
 @Config
 @TeleOp
-public class TeleOpRegionala extends OpMode {
+public class TeleOpRegionala1 extends OpMode {
 
     // Hardware Declarations
+
+    private Follower follower;
+    private final Pose startPose = new Pose(0,0,0);
     private DcMotorEx motor_stanga;
     private DcMotorEx motor_glisiere;
     private DcMotorEx fata_stanga;
@@ -126,7 +135,9 @@ public class TeleOpRegionala extends OpMode {
         controller = new PIDController(p, i, d);
         lcontroller = new PIDController(lp, li, ld);
         scontroller = new PIDController(sp, si, sd);
-
+        Constants.setConstants(FConstants.class, LConstants.class);
+        follower = new Follower(hardwareMap);
+        follower.setStartingPose(startPose);
         // Set up telemetry
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
@@ -170,16 +181,24 @@ public class TeleOpRegionala extends OpMode {
         bToggle = new ToggleButtonReader(toolOp, GamepadKeys.Button.B);
         yToggle = new ToggleButtonReader(toolOp, GamepadKeys.Button.Y);
         xToggle = new ToggleButtonReader(toolOp, GamepadKeys.Button.X);
-        rightToggle = new ToggleButtonReader(driverOp, GamepadKeys.Button.DPAD_RIGHT);
-        dpadUpToggle = new ToggleButtonReader(driverOp, GamepadKeys.Button.DPAD_UP);     // Initialize D-pad up toggle
-        dpadDownToggle = new ToggleButtonReader(driverOp, GamepadKeys.Button.DPAD_DOWN); // Initialize D-pad down toggle
+        rightToggle = new ToggleButtonReader(toolOp, GamepadKeys.Button.DPAD_DOWN);
+        dpadUpToggle = new ToggleButtonReader(toolOp, GamepadKeys.Button.RIGHT_STICK_BUTTON);     // Initialize D-pad up toggle
+        dpadDownToggle = new ToggleButtonReader(toolOp, GamepadKeys.Button.LEFT_STICK_BUTTON); // Initialize D-pad down toggle
     }
+
+    @Override
+    public void start() {
+        follower.startTeleopDrive();
+    }
+
 
     @Override
     public void loop() {
         GamepadEx driverOp = new GamepadEx(gamepad1);
         GamepadEx toolOp = new GamepadEx(gamepad2);
 
+        follower.setTeleOpMovementVectors(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, false);
+        follower.update();
         // Update toggle states
         aToggle.readValue();
         bToggle.readValue();
@@ -219,9 +238,10 @@ public class TeleOpRegionala extends OpMode {
         double sower = spid + sff;
 
         // Drivetrain control
-        double y = -gamepad1.left_stick_y;
-        double x = gamepad1.left_stick_x;
-        double rx = gamepad1.right_stick_x;
+        /*
+        double y = -gamepad2.left_stick_y;
+        double x = gamepad2.left_stick_x;
+        double rx = gamepad2.right_stick_x;
         double denominator = Math.max(abs(y) + abs(x) + abs(rx), 1);
         double frontLeftPower = (y + x + rx) / denominator;
         double backLeftPower = (y - x + rx) / denominator;
@@ -233,6 +253,8 @@ public class TeleOpRegionala extends OpMode {
         spate_stanga.setPower(backLeftPower);
         fata_dreapta.setPower(frontRightPower);
         spate_dreapta.setPower(backRightPower);
+
+         */
         motor_glisiere.setPower(lpower);
         motor_stanga.setPower(power);
         spec.setPower(sower);
@@ -285,10 +307,6 @@ public class TeleOpRegionala extends OpMode {
         }
         if (gamepad2.dpad_up && armPos > 2500) {
             ltarget = liftCosSus;
-        }
-        if (gamepad2.dpad_down) {
-            target = armCosJos;
-            ltarget = liftClosed;
         }
         if (rightToggle.wasJustPressed()) {
             if (cnt_right % 2 == 0) {
